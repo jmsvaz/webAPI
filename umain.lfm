@@ -1,0 +1,38 @@
+object fmWebQuery: TfmWebQuery
+  Left = 631
+  Height = 400
+  Top = 206
+  Width = 643
+  Caption = 'Web Query'
+  ClientHeight = 400
+  ClientWidth = 643
+  LCLVersion = '2.0.8.0'
+  object Edit1: TEdit
+    Left = 47
+    Height = 35
+    Top = 18
+    Width = 472
+    Anchors = [akTop, akLeft, akRight]
+    TabOrder = 0
+  end
+  object Button1: TButton
+    Left = 544
+    Height = 25
+    Top = 24
+    Width = 75
+    Anchors = [akTop, akRight]
+    Caption = 'Pesquisar'
+    Default = True
+    OnClick = Button1Click
+    TabOrder = 1
+  end
+  object Memo1: TMemo
+    Left = 50
+    Height = 294
+    Top = 82
+    Width = 469
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    ScrollBars = ssAutoBoth
+    TabOrder = 2
+  end
+end
