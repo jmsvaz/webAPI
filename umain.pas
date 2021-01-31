@@ -5,8 +5,7 @@ unit uMain;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  fphttpclient, fpjson;
+  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls;
 
 type
 
@@ -43,11 +42,10 @@ Var
   aOMDBAPI : TOMDB;
 begin
   Memo1.Clear;
-  aOMDBAPI:= TOMDB.Create(OMDB_API);
+  aOMDBAPI:= TOMDB.Create(OMDB_API_KEY);
   try
     aOMDBMovie:= aOMDBAPI.GetMovieByTitle(Edit1.Text);
     Memo1.Append('Title: ' + aOMDBMovie.Title);
-    Memo1.Append('Response: ' + BoolToStr(aOMDBMovie.Response,True));
     Memo1.Append(aOMDBMovie.FormatJSON);
   except
     on e: Exception do

@@ -5,35 +5,17 @@ unit OMDB;
 interface
 
 uses
-  Classes, SysUtils, fpJSON;
+  Classes, SysUtils, fpJSON, WebQuerybase;
 
 type
 
-  { TOMDB }
+  { TOMDBAPIVersion }
 
   TOMDBAPIVersion = (OMDBAPIv1);
 
-  { TOMDBResponse }
-
-  TOMDBResponse = class
-    private
-      fJSONData: TJSONData;
-      FResponse: Boolean;
-      function GetJSON: string;
-      procedure SetResponse(AValue: Boolean);
-      procedure SetJSON(AValue: string); virtual;
-      procedure DeStream;
-    public
-      constructor Create(aJSON: string = '');
-      destructor Destroy; override;
-      function FormatJSON: string;
-      property JSON: string read GetJSON write SetJSON;
-      property Response: Boolean read FResponse write SetResponse;
-    end;
-
   { TOMDBMovie }
 
-  TOMDBMovie = class(TOMDBResponse)
+  TOMDBMovie = class(TCustomJSONResponse)
     private
       FActors: string;
       FAwards: string;
@@ -129,13 +111,13 @@ type
       property Version: TOMDBAPIVersion read fVersion write SetVersion;
       function GetMovieByTitle(aTitle: string; aYear: string = ''): TOMDBMovie;
       function GetByIMDBid(aIMDBid: string): TOMDBMovie;
-      function Search(aTitle: string; aYear: string = ''): TOMDBResponse;
-      function SearchMovie(aTitle: string; aYear: string = ''): TOMDBResponse;
+      function Search(aTitle: string; aYear: string = ''): TCustomJSONResponse;
+      function SearchMovie(aTitle: string; aYear: string = ''): TCustomJSONResponse;
   end;
 
 implementation
 
-uses fphttpclient, RegExpr, jsonparser, fpjsonrtti;
+uses fphttpclient, RegExpr, fpjsonrtti;
 
 function ValidIMDBid(aID: string): Boolean;
 var
@@ -300,60 +282,6 @@ begin
   fYear:= AValue;
 end;
 
-
-
-{ TOMDBResponse }
-
-constructor TOMDBResponse.Create(aJSON: string);
-begin
-  JSON:= aJSON;
-end;
-
-destructor TOMDBResponse.Destroy;
-begin
-  if Assigned(fJSONData) then
-    FreeAndNil(fJSONData);
-  inherited Destroy;
-end;
-
-function TOMDBResponse.FormatJSON: string;
-begin
-  if Assigned(fJSONData) then
-    Result:= fJSONData.FormatJSON();
-end;
-
-function TOMDBResponse.GetJSON: string;
-begin
-  if Assigned(fJSONData) then
-    Result:= fJSONData.AsJSON;
-end;
-
-procedure TOMDBResponse.SetResponse(AValue: Boolean);
-begin
-  if fResponse = AValue then Exit;
-  fResponse:= AValue;
-end;
-
-procedure TOMDBResponse.SetJSON(AValue: string);
-begin
-  if Assigned(fJSONData) then
-    FreeAndNil(fJSONData);
-  fJSONData:= fpJSON.GetJSON(AValue);
-  DeStream;
-end;
-
-procedure TOMDBResponse.DeStream;
-var
-  DeStreamer: TJSONDeStreamer;
-begin
-  DeStreamer := TJSONDeStreamer.Create(nil);
-  try
-    DeStreamer.JSONToObject(JSON,self);
-  finally
-    DeStreamer.Free;
-  end;
-end;
-
 { TOMDB }
 
 constructor TOMDB.Create(aAPIKey: string);
@@ -441,7 +369,7 @@ begin
   Result:= TOMDBMovie.Create(aRequest);
 end;
 
-function TOMDB.Search(aTitle: string; aYear: string): TOMDBResponse;
+function TOMDB.Search(aTitle: string; aYear: string): TCustomJSONResponse;
 var
   completeURL: string;
   aRequest: string;
@@ -449,10 +377,10 @@ begin
   completeURL:= RequestURL('&plot=full&s=' + EncodeURLElement(aTitle) + YearParam(aYear));
   // TODO: better error check
   aRequest:= DoRequest(completeURL);
-  Result:= TOMDBResponse.Create(aRequest);
+  Result:= TCustomJSONResponse.Create(aRequest);
 end;
 
-function TOMDB.SearchMovie(aTitle: string; aYear: string): TOMDBResponse;
+function TOMDB.SearchMovie(aTitle: string; aYear: string): TCustomJSONResponse;
 var
   completeURL: string;
   aRequest: string;
@@ -460,7 +388,7 @@ begin
   completeURL:= RequestURL('&type=movie&plot=full&s=' + EncodeURLElement(aTitle) + YearParam(aYear));
   // TODO: better error check
   aRequest:= DoRequest(completeURL);
-  Result:= TOMDBResponse.Create(aRequest);
+  Result:= TCustomJSONResponse.Create(aRequest);
 end;
 
 end.
