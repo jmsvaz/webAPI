@@ -13,6 +13,19 @@ type
 
   TOMDBAPIVersion = (OMDBAPIv1);
 
+  { TOMDBRatingItem }
+
+  TOMDBRatingItem = class(TCollectionitem)
+    private
+      FSource: string;
+      FValue: string;
+      procedure SetSource(AValue: string);
+      procedure SetValue(AValue: string);
+    published
+      property Source: string read FSource write SetSource;
+      property Value: string read FValue write SetValue;
+  end;
+
   { TOMDBMovie }
 
   TOMDBMovie = class(TCustomJSONResponse)
@@ -33,7 +46,7 @@ type
       FPoster: string;
       FProduction: string;
       FRated: string;
-      FRatings: TStrings;
+      FRatings: TCollection;
       FReleased: string;
       FRuntime: string;
       fTitle: string;
@@ -80,7 +93,7 @@ type
       property Country: string read FCountry write SetCountry;
       property Awards: string read FAwards write SetAwards;
       property Poster: string read FPoster write SetPoster;
-//      property Ratings: TStrings read FRatings;
+//      property Ratings: TCollection read FRatings;
       property Metascore: string read FMetascore write SetMetascore;
       property imdbRating: string read FimdbRating write SetimdbRating;
       property imdbVotes: string read FimdbVotes write SetimdbVotes;
@@ -136,12 +149,26 @@ const
   OMDBBASEURL = 'http://www.omdbapi.com/';
   OMDBVersionString: array[TOMDBAPIVersion] of string = ('1');
 
+{ TOMDBRatingItem }
+
+procedure TOMDBRatingItem.SetSource(AValue: string);
+begin
+  if FSource=AValue then Exit;
+  FSource:=AValue;
+end;
+
+procedure TOMDBRatingItem.SetValue(AValue: string);
+begin
+  if FValue=AValue then Exit;
+  FValue:=AValue;
+end;
+
 { TOMDBMovie }
 
 constructor TOMDBMovie.Create(aJSON: string);
 begin
   inherited Create(aJSON);
-  FRatings:= TStringList.Create;
+  FRatings:= TCollection.Create(TOMDBRatingItem);
 end;
 
 destructor TOMDBMovie.Destroy;
