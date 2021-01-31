@@ -17,7 +17,6 @@ type
 
   TOMDBResponse = class
     private
-      fJSON: string;
       fJSONData: TJSONData;
       FResponse: Boolean;
       function GetJSON: string;
@@ -27,21 +26,59 @@ type
     public
       constructor Create(aJSON: string = '');
       destructor Destroy; override;
+      function FormatJSON: string;
       property JSON: string read GetJSON write SetJSON;
-    published
       property Response: Boolean read FResponse write SetResponse;
-
     end;
 
   { TOMDBMovie }
 
   TOMDBMovie = class(TOMDBResponse)
     private
-      fGenre: TStrings;
+      FActors: string;
+      FAwards: string;
+      FBoxOffice: string;
+      FCountry: string;
+      FDirector: string;
+      FDVD: string;
+      fGenre: string;
+      FimdbID: string;
+      FimdbRating: string;
+      FimdbVotes: string;
+      FLanguage: string;
+      FMetascore: string;
+      FPlot: string;
+      FPoster: string;
+      FProduction: string;
+      FRated: string;
+      FRatings: TStrings;
+      FReleased: string;
+      FRuntime: string;
       fTitle: string;
+      FWebsite: string;
+      FWriter: string;
       fYear: string;
-//      procedure SetGenre(AValue: TStrings);
+      procedure SetActors(AValue: string);
+      procedure SetAwards(AValue: string);
+      procedure SetBoxOffice(AValue: string);
+      procedure SetCountry(AValue: string);
+      procedure SetDirector(AValue: string);
+      procedure SetDVD(AValue: string);
+      procedure SetGenre(AValue: string);
+      procedure SetimdbID(AValue: string);
+      procedure SetimdbRating(AValue: string);
+      procedure SetimdbVotes(AValue: string);
+      procedure SetLanguage(AValue: string);
+      procedure SetMetascore(AValue: string);
+      procedure SetPlot(AValue: string);
+      procedure SetPoster(AValue: string);
+      procedure SetProduction(AValue: string);
+      procedure SetRated(AValue: string);
+      procedure SetReleased(AValue: string);
+      procedure SetRuntime(AValue: string);
       procedure SetTitle(AValue: string);
+      procedure SetWebsite(AValue: string);
+      procedure SetWriter(AValue: string);
       procedure SetYear(AValue: string);
     public
       constructor Create(aJSON: string = '');
@@ -49,7 +86,27 @@ type
     published
       property Year: string read fYear write SetYear;
       property Title: string read fTitle write SetTitle;
-      property Genre: TStrings read fGenre;
+      property Rated: string read FRated write SetRated;
+      property Released: string read FReleased write SetReleased;
+      property Runtime: string read FRuntime write SetRuntime;
+      property Genre: string read fGenre write SetGenre;
+      property Director: string read FDirector write SetDirector;
+      property Writer: string read FWriter write SetWriter;
+      property Actors: string read FActors write SetActors;
+      property Plot: string read FPlot write SetPlot;
+      property Language: string read FLanguage write SetLanguage;
+      property Country: string read FCountry write SetCountry;
+      property Awards: string read FAwards write SetAwards;
+      property Poster: string read FPoster write SetPoster;
+//      property Ratings: TStrings read FRatings;
+      property Metascore: string read FMetascore write SetMetascore;
+      property imdbRating: string read FimdbRating write SetimdbRating;
+      property imdbVotes: string read FimdbVotes write SetimdbVotes;
+      property imdbID: string read FimdbID write SetimdbID;
+      property DVD: string read FDVD write SetDVD;
+      property BoxOffice: string read FBoxOffice write SetBoxOffice;
+      property Production: string read FProduction write SetProduction;
+      property Website: string read FWebsite write SetWebsite;
   end;
 
   TOMDB = class
@@ -71,7 +128,7 @@ type
       property APIKey: string read fAPIKey write SetAPIKey;
       property Version: TOMDBAPIVersion read fVersion write SetVersion;
       function GetMovieByTitle(aTitle: string; aYear: string = ''): TOMDBMovie;
-      function GetByIMDBid(aIMDBid: string): TOMDBResponse;
+      function GetByIMDBid(aIMDBid: string): TOMDBMovie;
       function Search(aTitle: string; aYear: string = ''): TOMDBResponse;
       function SearchMovie(aTitle: string; aYear: string = ''): TOMDBResponse;
   end;
@@ -99,22 +156,124 @@ const
 
 { TOMDBMovie }
 
-procedure TOMDBMovie.SetYear(AValue: string);
-begin
-  if fYear= AValue then Exit;
-  fYear:= AValue;
-end;
-
 constructor TOMDBMovie.Create(aJSON: string);
 begin
   inherited Create(aJSON);
-  fGenre:= TStringList.Create;
+  FRatings:= TStringList.Create;
 end;
 
 destructor TOMDBMovie.Destroy;
 begin
-  fGenre.Free;
+  FRatings.Free;
   inherited Destroy;
+end;
+
+procedure TOMDBMovie.SetGenre(AValue: string);
+begin
+  if fGenre = AValue then Exit;
+  fGenre:= AValue;
+end;
+
+procedure TOMDBMovie.SetimdbID(AValue: string);
+begin
+  if FimdbID=AValue then Exit;
+  FimdbID:=AValue;
+end;
+
+procedure TOMDBMovie.SetimdbRating(AValue: string);
+begin
+  if FimdbRating=AValue then Exit;
+  FimdbRating:=AValue;
+end;
+
+procedure TOMDBMovie.SetimdbVotes(AValue: string);
+begin
+  if FimdbVotes=AValue then Exit;
+  FimdbVotes:=AValue;
+end;
+
+procedure TOMDBMovie.SetLanguage(AValue: string);
+begin
+  if FLanguage=AValue then Exit;
+  FLanguage:=AValue;
+end;
+
+procedure TOMDBMovie.SetMetascore(AValue: string);
+begin
+  if FMetascore=AValue then Exit;
+  FMetascore:=AValue;
+end;
+
+procedure TOMDBMovie.SetPlot(AValue: string);
+begin
+  if FPlot=AValue then Exit;
+  FPlot:=AValue;
+end;
+
+procedure TOMDBMovie.SetPoster(AValue: string);
+begin
+  if FPoster=AValue then Exit;
+  FPoster:=AValue;
+end;
+
+procedure TOMDBMovie.SetProduction(AValue: string);
+begin
+  if FProduction=AValue then Exit;
+  FProduction:=AValue;
+end;
+
+procedure TOMDBMovie.SetDirector(AValue: string);
+begin
+  if FDirector=AValue then Exit;
+  FDirector:=AValue;
+end;
+
+procedure TOMDBMovie.SetDVD(AValue: string);
+begin
+  if FDVD=AValue then Exit;
+  FDVD:=AValue;
+end;
+
+procedure TOMDBMovie.SetActors(AValue: string);
+begin
+  if FActors=AValue then Exit;
+  FActors:=AValue;
+end;
+
+procedure TOMDBMovie.SetAwards(AValue: string);
+begin
+  if FAwards=AValue then Exit;
+  FAwards:=AValue;
+end;
+
+procedure TOMDBMovie.SetBoxOffice(AValue: string);
+begin
+  if FBoxOffice=AValue then Exit;
+  FBoxOffice:=AValue;
+end;
+
+procedure TOMDBMovie.SetCountry(AValue: string);
+begin
+  if FCountry=AValue then Exit;
+  FCountry:=AValue;
+end;
+
+procedure TOMDBMovie.SetRated(AValue: string);
+begin
+  if FRated=AValue then Exit;
+  FRated:=AValue;
+end;
+
+procedure TOMDBMovie.SetReleased(AValue: string);
+begin
+  if FReleased=AValue then Exit;
+  FReleased:=AValue;
+end;
+
+procedure TOMDBMovie.SetRuntime(AValue: string);
+begin
+  if FRuntime=AValue then Exit;
+  FRuntime:=AValue;
 end;
 
 procedure TOMDBMovie.SetTitle(AValue: string);
@@ -122,6 +281,26 @@ begin
   if fTitle = AValue then Exit;
   fTitle:= AValue;
 end;
+
+procedure TOMDBMovie.SetWebsite(AValue: string);
+begin
+  if FWebsite=AValue then Exit;
+  FWebsite:=AValue;
+end;
+
+procedure TOMDBMovie.SetWriter(AValue: string);
+begin
+  if FWriter=AValue then Exit;
+  FWriter:=AValue;
+end;
+
+procedure TOMDBMovie.SetYear(AValue: string);
+begin
+  if fYear= AValue then Exit;
+  fYear:= AValue;
+end;
+
+
 
 { TOMDBResponse }
 
@@ -135,6 +314,12 @@ begin
   if Assigned(fJSONData) then
     FreeAndNil(fJSONData);
   inherited Destroy;
+end;
+
+function TOMDBResponse.FormatJSON: string;
+begin
+  if Assigned(fJSONData) then
+    Result:= fJSONData.FormatJSON();
 end;
 
 function TOMDBResponse.GetJSON: string;
@@ -164,11 +349,9 @@ begin
   DeStreamer := TJSONDeStreamer.Create(nil);
   try
     DeStreamer.JSONToObject(JSON,self);
-
   finally
     DeStreamer.Free;
   end;
-
 end;
 
 { TOMDB }
@@ -222,7 +405,6 @@ begin
     httpClient.AddHeader('Content-Type','application/json');
     httpClient.IOTimeout:= Timeout;
     aResult:= httpClient.Get(aURL);
-    //      memo1.Append('Request Response : ' + httpClient.ResponseStatusText);
   finally
     httpClient.Free;
   end;
@@ -239,35 +421,46 @@ end;
 function TOMDB.GetMovieByTitle(aTitle: string; aYear: string): TOMDBMovie;
 var
   completeURL: string;
+  aRequest: string;
 begin
   completeURL:= RequestURL('&type=movie&plot=full&t=' + EncodeURLElement(aTitle) + YearParam(aYear));
-  Result:= TOMDBMovie.Create(DoRequest(completeURL));
+  // TODO: better error check
+  aRequest:= DoRequest(completeURL);
+  Result:= TOMDBMovie.Create(aRequest);
 end;
 
-function TOMDB.GetByIMDBid(aIMDBid: string): TOMDBResponse;
+function TOMDB.GetByIMDBid(aIMDBid: string): TOMDBMovie;
 var
   completeURL: string;
+  aRequest: string;
 begin
   if not ValidIMDBid(aIMDBid) then Exit;
   completeURL:= RequestURL('&plot=full&i=' + EncodeURLElement(aIMDBid));
-  Result:= TOMDBMovie.Create(DoRequest(completeURL));
+  // TODO: better error check
+  aRequest:= DoRequest(completeURL);
+  Result:= TOMDBMovie.Create(aRequest);
 end;
 
 function TOMDB.Search(aTitle: string; aYear: string): TOMDBResponse;
 var
   completeURL: string;
+  aRequest: string;
 begin
   completeURL:= RequestURL('&plot=full&s=' + EncodeURLElement(aTitle) + YearParam(aYear));
-  Result:= TOMDBResponse.Create(DoRequest(completeURL));
-
+  // TODO: better error check
+  aRequest:= DoRequest(completeURL);
+  Result:= TOMDBResponse.Create(aRequest);
 end;
 
 function TOMDB.SearchMovie(aTitle: string; aYear: string): TOMDBResponse;
 var
   completeURL: string;
+  aRequest: string;
 begin
   completeURL:= RequestURL('&type=movie&plot=full&s=' + EncodeURLElement(aTitle) + YearParam(aYear));
-  Result:= TOMDBResponse.Create(DoRequest(completeURL));
+  // TODO: better error check
+  aRequest:= DoRequest(completeURL);
+  Result:= TOMDBResponse.Create(aRequest);
 end;
 
 end.
@@ -313,3 +506,49 @@ end.
 "Response" : "True"
 }
 
+{
+procedure DumpJSONData(J: TJSonData; DOEOLN: Boolean);
+var
+  I : Integer;
+  DataString : String;
+begin
+  // JSONType property determines kind of value.
+  Case J.jsontype of
+    jtNull   : Memo1.Append('Null');
+    jtBoolean : If J.AsBoolean then
+                  Memo1.Append('True')
+                else
+                  Memo1.Append('False');
+    jtNumber : {JSONNumber has extra NumberType property
+                which determines kind of value (int/float).}
+               Case TJSONNumber(J).NumberType of
+                 ntInteger : Memo1.Append(inttostr(J.AsInteger));
+                 ntFloat   : Memo1.Append(floattostr(J.AsFloat));
+               end;
+    jtString : Memo1.Append('"' + J.AsString +'"');
+    jtArray  : begin
+               Memo1.Append('======================');
+               For I:=0 to J.Count-1 do
+                 begin
+                 DumpJSONData(J.Items[I],False);
+                 If I<J.Count-1 then
+                   Memo1.Append('+++++++++++++++++++++++');
+                 end;
+               Memo1.Append('=======================');
+               end;
+    jtObject : begin
+               Memo1.Append('========================');
+               For I:=0 to J.Count-1 do
+                 begin
+                 Memo1.Append('"' + TJSONObject(J).Names[i] + '" : ');
+                 DumpJSONData(J.Items[I],False);
+                 If I<J.Count-1 then
+                   Memo1.Append('+++++++++++++++++++++++++')
+                 end;
+               Memo1.Append('=========================');
+               end;
+   end;
+   If DOEOLN then
+     Memo1.Append('');
+end;
+}
