@@ -11,7 +11,7 @@ type
 
   { TOMDB }
 
-  TOMDBAPIVersion = (oaV1);
+  TOMDBAPIVersion = (OMDBAPIv1);
 
   { TOMDBResponse }
 
@@ -358,7 +358,7 @@ end;
 
 constructor TOMDB.Create(aAPIKey: string);
 begin
-  Version:= oaV1;
+  Version:= OMDBAPIv1;
   TimeOut:= 0; // Infinite timeout on most platforms
   APIKey:= aAPIKey;
 end;
