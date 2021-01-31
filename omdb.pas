@@ -110,7 +110,7 @@ type
       property APIKey: string read fAPIKey write SetAPIKey;
       property Version: TOMDBAPIVersion read fVersion write SetVersion;
       function GetMovieByTitle(aTitle: string; aYear: string = ''): TOMDBMovie;
-      function GetByIMDBid(aIMDBid: string): TOMDBMovie;
+      function GetMovieByIMDBid(aIMDBid: string): TOMDBMovie;
       function Search(aTitle: string; aYear: string = ''): TCustomJSONResponse;
       function SearchMovie(aTitle: string; aYear: string = ''): TCustomJSONResponse;
   end;
@@ -357,7 +357,7 @@ begin
   Result:= TOMDBMovie.Create(aRequest);
 end;
 
-function TOMDB.GetByIMDBid(aIMDBid: string): TOMDBMovie;
+function TOMDB.GetMovieByIMDBid(aIMDBid: string): TOMDBMovie;
 var
   completeURL: string;
   aRequest: string;
