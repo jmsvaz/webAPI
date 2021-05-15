@@ -13,6 +13,13 @@ type
 
   TOMDBAPIVersion = (OMDBAPIv1);
 
+  { TOMDBAPI Exceptions }
+
+  TOMDBAPIError = class(Exception);
+  TOMDBAPIMovieNotFoundError = class(TOMDBAPIError);
+  TOMDBAPIIncorrectIMDbIDError = class(TOMDBAPIError);
+
+
   { TOMDBRatingItem }
 
   TOMDBRatingItem = class(TCollectionitem)
@@ -112,6 +119,7 @@ type
       function YearParam(aYear: string): string;
       function RequestURL(aParams: string): string;
       function DoRequest(aURL: string): string;
+      function ProcessRequest(aJSON: string): TCustomJSONResponse;
       function ValidYear(aYear: string): Boolean;
       procedure SetAPIKey(AValue: string);
       procedure SetTimeOut(AValue: Integer);
@@ -130,7 +138,7 @@ type
 
 implementation
 
-uses fphttpclient, RegExpr, fpjsonrtti;
+uses fphttpclient, RegExpr;
 
 function ValidIMDBid(aID: string): Boolean;
 var
@@ -144,6 +152,8 @@ begin
     regex.Free;
   end;
 end;
+
+
 
 const
   OMDBBASEURL = 'http://www.omdbapi.com/';
@@ -366,6 +376,42 @@ begin
   Result:= aResult;
 end;
 
+function TOMDB.ProcessRequest(aJSON: string): TCustomJSONResponse;
+var
+  json: TJSONObject;
+begin
+  Result:= nil;
+  try
+    json:= TJSONObject(GetJSON(aJSON));
+
+    if json.FindPath('Response').AsString = 'False' then
+      begin
+        if json.FindPath('Error').AsString = 'Movie not found!' then
+          raise TOMDBAPIMovieNotFoundError.Create(json.FindPath('Error').AsString);
+        if json.FindPath('Error').AsString = 'Incorrect IMDb ID.' then
+          raise TOMDBAPIIncorrectIMDbIDError.Create(json.FindPath('Error').AsString);
+        raise TOMDBAPIError.Create(json.FindPath('Error').AsString);
+      end
+    else
+      begin
+        if json.FindPath('Response').AsString = 'True' then
+          begin
+              if json.FindPath('Type').AsString = 'movie' then
+                Result:= TOMDBMovie.Create(aJSON);
+              if json.FindPath('Type').AsString = 'series' then
+                Result:= TCustomJSONResponse.Create(aJSON);        // TODO: series
+              if json.FindPath('Type').AsString = 'episode' then
+                Result:= TCustomJSONResponse.Create(aJSON);        // TODO: episode
+          end
+        else
+          raise TOMDBAPIError.Create('Unknown Error');
+      end;
+  except
+//    raise TOMDBAPIError.Create('Unknown Error');
+  end;
+
+end;
+
 function TOMDB.ValidYear(aYear: string): Boolean;
 var
   y: Integer;
@@ -377,11 +423,17 @@ function TOMDB.GetMovieByTitle(aTitle: string; aYear: string): TOMDBMovie;
 var
   completeURL: string;
   aRequest: string;
+  aResult: TCustomJSONResponse;
 begin
+  Result:= nil;
   completeURL:= RequestURL('&type=movie&plot=full&t=' + EncodeURLElement(aTitle) + YearParam(aYear));
   // TODO: better error check
   aRequest:= DoRequest(completeURL);
-  Result:= TOMDBMovie.Create(aRequest);
+  aResult:= ProcessRequest(aRequest);
+  if aResult is TOMDBMovie then
+    Result:= TOMDBMovie(aResult)
+  else
+    raise TOMDBAPIError.Create('Not Movie');
 end;
 
 function TOMDB.GetMovieByIMDBid(aIMDBid: string): TOMDBMovie;
