@@ -1,38 +1,60 @@
 object fmWebQuery: TfmWebQuery
-  Left = 631
-  Height = 400
-  Top = 206
-  Width = 643
+  Left = 416
+  Height = 556
+  Top = 196
+  Width = 864
   Caption = 'Web Query'
-  ClientHeight = 400
-  ClientWidth = 643
-  LCLVersion = '2.0.10.0'
-  object Edit1: TEdit
-    Left = 47
+  ClientHeight = 556
+  ClientWidth = 864
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  LCLVersion = '2.0.12.0'
+  object edSearch: TEdit
+    Left = 286
     Height = 35
-    Top = 18
-    Width = 472
+    Top = 21
+    Width = 454
     Anchors = [akTop, akLeft, akRight]
-    TabOrder = 0
+    TabOrder = 1
   end
-  object Button1: TButton
-    Left = 544
-    Height = 25
-    Top = 24
-    Width = 75
+  object btSearch: TButton
+    Left = 760
+    Height = 32
+    Top = 22
+    Width = 88
     Anchors = [akTop, akRight]
     Caption = 'Pesquisar'
     Default = True
-    OnClick = Button1Click
-    TabOrder = 1
+    OnClick = btSearchClick
+    TabOrder = 2
   end
-  object Memo1: TMemo
+  object mmResult: TMemo
     Left = 50
-    Height = 294
-    Top = 82
-    Width = 469
+    Height = 388
+    Top = 144
+    Width = 690
     Anchors = [akTop, akLeft, akRight, akBottom]
     ScrollBars = ssAutoBoth
-    TabOrder = 2
+    TabOrder = 3
+  end
+  object cbSearchAPI: TComboBox
+    Left = 50
+    Height = 34
+    Top = 21
+    Width = 221
+    ItemHeight = 0
+    OnChange = cbSearchAPIChange
+    Sorted = True
+    Style = csDropDownList
+    TabOrder = 0
+  end
+  object cbSearchMethod: TComboBox
+    Left = 50
+    Height = 34
+    Top = 72
+    Width = 221
+    ItemHeight = 0
+    Style = csDropDownList
+    TabOrder = 4
   end
 end

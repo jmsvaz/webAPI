@@ -13,10 +13,18 @@ type
 
   TOMDBAPIVersion = (OMDBAPIv1);
 
-  { TOMDBAPI Exceptions }
+  { TOMDBAPIError }
 
-  TOMDBAPIError = class(Exception);
+  TOMDBAPIError = class(TCustomJSONResponse)
+    private
+      fError: string;
+      procedure SetError(AValue: string);
+    published
+      property Error: string read fError write SetError;
+  end;
+
   TOMDBAPIMovieNotFoundError = class(TOMDBAPIError);
+
   TOMDBAPIIncorrectIMDbIDError = class(TOMDBAPIError);
 
 
@@ -53,7 +61,7 @@ type
       FPoster: string;
       FProduction: string;
       FRated: string;
-      FRatings: TCollection;
+      fRatings: TCollection;
       FReleased: string;
       FRuntime: string;
       fTitle: string;
@@ -100,7 +108,7 @@ type
       property Country: string read FCountry write SetCountry;
       property Awards: string read FAwards write SetAwards;
       property Poster: string read FPoster write SetPoster;
-//      property Ratings: TCollection read FRatings;
+      property Ratings: TCollection read fRatings;
       property Metascore: string read FMetascore write SetMetascore;
       property imdbRating: string read FimdbRating write SetimdbRating;
       property imdbVotes: string read FimdbVotes write SetimdbVotes;
@@ -130,7 +138,7 @@ type
       property TimeOut: Integer read fTimeOut write SetTimeOut;
       property APIKey: string read fAPIKey write SetAPIKey;
       property Version: TOMDBAPIVersion read fVersion write SetVersion;
-      function GetMovieByTitle(aTitle: string; aYear: string = ''): TOMDBMovie;
+      function GetMovieByTitle(aTitle: string; aYear: string = ''): TCustomJSONResponse;
       function GetMovieByIMDBid(aIMDBid: string): TOMDBMovie;
       function Search(aTitle: string; aYear: string = ''): TCustomJSONResponse;
       function SearchMovie(aTitle: string; aYear: string = ''): TCustomJSONResponse;
@@ -159,6 +167,14 @@ const
   OMDBBASEURL = 'http://www.omdbapi.com/';
   OMDBVersionString: array[TOMDBAPIVersion] of string = ('1');
 
+{ TOMDBAPIError }
+
+procedure TOMDBAPIError.SetError(AValue: string);
+begin
+  if FError=AValue then Exit;
+  FError:=AValue;
+end;
+
 { TOMDBRatingItem }
 
 procedure TOMDBRatingItem.SetSource(AValue: string);
@@ -177,8 +193,8 @@ end;
 
 constructor TOMDBMovie.Create(aJSON: string);
 begin
-  inherited Create(aJSON);
   FRatings:= TCollection.Create(TOMDBRatingItem);
+  inherited Create(aJSON);
 end;
 
 destructor TOMDBMovie.Destroy;
@@ -387,10 +403,12 @@ begin
     if json.FindPath('Response').AsString = 'False' then
       begin
         if json.FindPath('Error').AsString = 'Movie not found!' then
-          raise TOMDBAPIMovieNotFoundError.Create(json.FindPath('Error').AsString);
-        if json.FindPath('Error').AsString = 'Incorrect IMDb ID.' then
-          raise TOMDBAPIIncorrectIMDbIDError.Create(json.FindPath('Error').AsString);
-        raise TOMDBAPIError.Create(json.FindPath('Error').AsString);
+          Result:= TOMDBAPIMovieNotFoundError.Create(aJSON)
+        else
+          if json.FindPath('Error').AsString = 'Incorrect IMDb ID.' then
+            Result:= TOMDBAPIIncorrectIMDbIDError.Create(aJSON)
+          else
+            Result:= TOMDBAPIError.Create(aJSON);
       end
     else
       begin
@@ -404,12 +422,11 @@ begin
                 Result:= TCustomJSONResponse.Create(aJSON);        // TODO: episode
           end
         else
-          raise TOMDBAPIError.Create('Unknown Error');
+          Result:= TOMDBAPIError.Create(aJSON);
       end;
   except
-//    raise TOMDBAPIError.Create('Unknown Error');
+    Result:= TOMDBAPIError.Create;
   end;
-
 end;
 
 function TOMDB.ValidYear(aYear: string): Boolean;
@@ -419,7 +436,8 @@ begin
   Result:= (Length(aYear) > 0) and TryStrToInt(aYear,y);
 end;
 
-function TOMDB.GetMovieByTitle(aTitle: string; aYear: string): TOMDBMovie;
+function TOMDB.GetMovieByTitle(aTitle: string; aYear: string
+  ): TCustomJSONResponse;
 var
   completeURL: string;
   aRequest: string;
@@ -433,7 +451,7 @@ begin
   if aResult is TOMDBMovie then
     Result:= TOMDBMovie(aResult)
   else
-    raise TOMDBAPIError.Create('Not Movie');
+    Result:= aResult;
 end;
 
 function TOMDB.GetMovieByIMDBid(aIMDBid: string): TOMDBMovie;
