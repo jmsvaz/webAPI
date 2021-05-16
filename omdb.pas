@@ -139,7 +139,7 @@ type
       property APIKey: string read fAPIKey write SetAPIKey;
       property Version: TOMDBAPIVersion read fVersion write SetVersion;
       function GetMovieByTitle(aTitle: string; aYear: string = ''): TCustomJSONResponse;
-      function GetMovieByIMDBid(aIMDBid: string): TOMDBMovie;
+      function GetMovieByIMDBid(aIMDBid: string): TCustomJSONResponse;
       function Search(aTitle: string; aYear: string = ''): TCustomJSONResponse;
       function SearchMovie(aTitle: string; aYear: string = ''): TCustomJSONResponse;
   end;
@@ -441,51 +441,45 @@ function TOMDB.GetMovieByTitle(aTitle: string; aYear: string
 var
   completeURL: string;
   aRequest: string;
-  aResult: TCustomJSONResponse;
 begin
   Result:= nil;
   completeURL:= RequestURL('&type=movie&plot=full&t=' + EncodeURLElement(aTitle) + YearParam(aYear));
-  // TODO: better error check
   aRequest:= DoRequest(completeURL);
-  aResult:= ProcessRequest(aRequest);
-  if aResult is TOMDBMovie then
-    Result:= TOMDBMovie(aResult)
-  else
-    Result:= aResult;
+  Result:= ProcessRequest(aRequest);
 end;
 
-function TOMDB.GetMovieByIMDBid(aIMDBid: string): TOMDBMovie;
+function TOMDB.GetMovieByIMDBid(aIMDBid: string): TCustomJSONResponse;
 var
   completeURL: string;
   aRequest: string;
-begin
+begin     
+  Result:= nil;
   if not ValidIMDBid(aIMDBid) then Exit;
   completeURL:= RequestURL('&plot=full&i=' + EncodeURLElement(aIMDBid));
-  // TODO: better error check
   aRequest:= DoRequest(completeURL);
-  Result:= TOMDBMovie.Create(aRequest);
+  Result:= ProcessRequest(aRequest);
 end;
 
 function TOMDB.Search(aTitle: string; aYear: string): TCustomJSONResponse;
 var
   completeURL: string;
   aRequest: string;
-begin
+begin     
+  Result:= nil;
   completeURL:= RequestURL('&plot=full&s=' + EncodeURLElement(aTitle) + YearParam(aYear));
-  // TODO: better error check
   aRequest:= DoRequest(completeURL);
-  Result:= TCustomJSONResponse.Create(aRequest);
+  Result:= ProcessRequest(aRequest);
 end;
 
 function TOMDB.SearchMovie(aTitle: string; aYear: string): TCustomJSONResponse;
 var
   completeURL: string;
   aRequest: string;
-begin
+begin     
+  Result:= nil;
   completeURL:= RequestURL('&type=movie&plot=full&s=' + EncodeURLElement(aTitle) + YearParam(aYear));
-  // TODO: better error check
   aRequest:= DoRequest(completeURL);
-  Result:= TCustomJSONResponse.Create(aRequest);
+  Result:= ProcessRequest(aRequest);
 end;
 
 end.
@@ -529,51 +523,4 @@ end.
 "Production" : "Warner Bros. Pictures",
 "Website" : "http://www.whatisthematrix.com",
 "Response" : "True"
-}
-
-{
-procedure DumpJSONData(J: TJSonData; DOEOLN: Boolean);
-var
-  I : Integer;
-  DataString : String;
-begin
-  // JSONType property determines kind of value.
-  Case J.jsontype of
-    jtNull   : Memo1.Append('Null');
-    jtBoolean : If J.AsBoolean then
-                  Memo1.Append('True')
-                else
-                  Memo1.Append('False');
-    jtNumber : {JSONNumber has extra NumberType property
-                which determines kind of value (int/float).}
-               Case TJSONNumber(J).NumberType of
-                 ntInteger : Memo1.Append(inttostr(J.AsInteger));
-                 ntFloat   : Memo1.Append(floattostr(J.AsFloat));
-               end;
-    jtString : Memo1.Append('"' + J.AsString +'"');
-    jtArray  : begin
-               Memo1.Append('======================');
-               For I:=0 to J.Count-1 do
-                 begin
-                 DumpJSONData(J.Items[I],False);
-                 If I<J.Count-1 then
-                   Memo1.Append('+++++++++++++++++++++++');
-                 end;
-               Memo1.Append('=======================');
-               end;
-    jtObject : begin
-               Memo1.Append('========================');
-               For I:=0 to J.Count-1 do
-                 begin
-                 Memo1.Append('"' + TJSONObject(J).Names[i] + '" : ');
-                 DumpJSONData(J.Items[I],False);
-                 If I<J.Count-1 then
-                   Memo1.Append('+++++++++++++++++++++++++')
-                 end;
-               Memo1.Append('=========================');
-               end;
-   end;
-   If DOEOLN then
-     Memo1.Append('');
-end;
 }
