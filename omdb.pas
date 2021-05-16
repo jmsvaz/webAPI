@@ -41,16 +41,14 @@ type
       property Value: string read FValue write SetValue;
   end;
 
-  { TOMDBMovie }
+  { TOMDBMedia }
 
-  TOMDBMovie = class(TCustomJSONResponse)
+  TOMDBMedia = class(TCustomJSONResponse)
     private
       FActors: string;
       FAwards: string;
-      FBoxOffice: string;
       FCountry: string;
       FDirector: string;
-      FDVD: string;
       fGenre: string;
       FimdbID: string;
       FimdbRating: string;
@@ -59,21 +57,17 @@ type
       FMetascore: string;
       FPlot: string;
       FPoster: string;
-      FProduction: string;
       FRated: string;
       fRatings: TCollection;
       FReleased: string;
       FRuntime: string;
       fTitle: string;
-      FWebsite: string;
       FWriter: string;
       fYear: string;
       procedure SetActors(AValue: string);
       procedure SetAwards(AValue: string);
-      procedure SetBoxOffice(AValue: string);
       procedure SetCountry(AValue: string);
       procedure SetDirector(AValue: string);
-      procedure SetDVD(AValue: string);
       procedure SetGenre(AValue: string);
       procedure SetimdbID(AValue: string);
       procedure SetimdbRating(AValue: string);
@@ -82,12 +76,10 @@ type
       procedure SetMetascore(AValue: string);
       procedure SetPlot(AValue: string);
       procedure SetPoster(AValue: string);
-      procedure SetProduction(AValue: string);
       procedure SetRated(AValue: string);
       procedure SetReleased(AValue: string);
       procedure SetRuntime(AValue: string);
       procedure SetTitle(AValue: string);
-      procedure SetWebsite(AValue: string);
       procedure SetWriter(AValue: string);
       procedure SetYear(AValue: string);
     public
@@ -113,11 +105,105 @@ type
       property imdbRating: string read FimdbRating write SetimdbRating;
       property imdbVotes: string read FimdbVotes write SetimdbVotes;
       property imdbID: string read FimdbID write SetimdbID;
+  end;
+
+  { TOMDBMOvie }
+
+  TOMDBMovie = class(TOMDBMedia)
+    private
+      FBoxOffice: string;
+      FDVD: string;
+      FProduction: string;
+      FWebsite: string;
+      procedure SetBoxOffice(AValue: string);
+      procedure SetDVD(AValue: string);
+      procedure SetProduction(AValue: string);
+      procedure SetWebsite(AValue: string);
+    published
       property DVD: string read FDVD write SetDVD;
       property BoxOffice: string read FBoxOffice write SetBoxOffice;
       property Production: string read FProduction write SetProduction;
       property Website: string read FWebsite write SetWebsite;
-  end;
+    end;
+
+  { TOMDBSeries }
+
+  TOMDBSeries = class(TOMDBMedia)
+    private
+      fTotalSeasons: Integer;
+      procedure SetTotalSeasons(AValue: Integer);
+    published
+      property TotalSeasons: Integer read fTotalSeasons write SetTotalSeasons;
+    end;
+
+  { TOMDBEpisode }
+
+  TOMDBEpisode = class(TOMDBMedia)
+    private
+      fEpisode: Integer;
+      fSeason: Integer;
+      fSeriesID: string;
+      procedure SetEpisode(AValue: Integer);
+      procedure SetSeason(AValue: Integer);
+      procedure SetSeriesID(AValue: string);
+    published
+      property seriesID: string read fSeriesID write SetSeriesID;
+      property Season: Integer read fSeason write SetSeason;
+      property Episode: Integer read fEpisode write SetEpisode;
+    end;
+
+  { TOMDBGame }
+
+  TOMDBGame = class(TOMDBMedia)
+    private
+      FBoxOffice: string;
+      FDVD: string;
+      FProduction: string;
+      FWebsite: string;
+      procedure SetBoxOffice(AValue: string);
+      procedure SetDVD(AValue: string);
+      procedure SetProduction(AValue: string);
+      procedure SetWebsite(AValue: string);
+    published
+      property DVD: string read FDVD write SetDVD;
+      property BoxOffice: string read FBoxOffice write SetBoxOffice;
+      property Production: string read FProduction write SetProduction;
+      property Website: string read FWebsite write SetWebsite;
+    end;
+
+  { TOMDBSearchItem }
+
+  TOMDBSearchItem = class(TCollectionitem)
+    private
+      FimdbID: string;
+      FPoster: string;
+      FTitle: string;
+      FYear: string;
+      procedure SetimdbID(AValue: string);
+      procedure SetPoster(AValue: string);
+      procedure SetTitle(AValue: string);
+      procedure SetYear(AValue: string);
+    published
+      property Title: string read FTitle write SetTitle;
+      property Year: string read FYear write SetYear;
+      property imdbID: string read FimdbID write SetimdbID;
+//    property Type: string
+      property Poster: string read FPoster write SetPoster;
+    end;
+
+  TOMDBSearch = class(TCustomJSONResponse)
+    private
+      fSearch: TCollection;
+      FTotalResults: Integer;
+      procedure SetTotalResults(AValue: Integer);
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property Search: TCollection read fSearch;
+      property totalResults: Integer read FTotalResults write SetTotalResults;
+    end;
+
 
   TOMDB = class
     private
@@ -128,9 +214,11 @@ type
       function TitleParam(aTitle: string): string;
       function IMDBidParam(aIMDBid: string): string;
       function SearchParam(aSearch: string): string;
+      function PageParam(aPage: string): string;
       function MovieParam: string;
       function SeriesParam: string;
       function EpisodeParam: string;
+      function GameParam: string;
       function RequestURL(aParams: string): string;
       function DoRequest(aURL: string): string;
       function ProcessRequest(aJSON: string): TCustomJSONResponse;
@@ -149,8 +237,16 @@ type
       function GetMovieByTitle(aTitle: string; aYear: string = ''): TCustomJSONResponse;
       function GetMovieByIMDBid(aIMDBid: string): TCustomJSONResponse;
       function GetSeriesByTitle(aTitle: string; aYear: string = ''): TCustomJSONResponse;
+      function GetSeriesByIMDBid(aIMDBid: string): TCustomJSONResponse;
+      function GetEpisodeByTitle(aTitle: string; aYear: string = ''): TCustomJSONResponse;
+      function GetEpisodeByIMDBid(aIMDBid: string): TCustomJSONResponse;
+      function GetGameByTitle(aTitle: string; aYear: string = ''): TCustomJSONResponse;
+      function GetGameByIMDBid(aIMDBid: string): TCustomJSONResponse;
       function Search(aTitle: string; aYear: string = ''): TCustomJSONResponse;
       function SearchMovie(aTitle: string; aYear: string = ''): TCustomJSONResponse;
+      function SearchSeries(aTitle: string; aYear: string = ''): TCustomJSONResponse;
+      function SearchEpisode(aTitle: string; aYear: string = ''): TCustomJSONResponse;
+      function SearchGame(aTitle: string; aYear: string = ''): TCustomJSONResponse;
   end;
 
 implementation
@@ -176,6 +272,132 @@ const
   OMDBBASEURL = 'http://www.omdbapi.com/';
   OMDBVersionString: array[TOMDBAPIVersion] of string = ('1');
 
+{ TOMDBEpisode }
+
+procedure TOMDBEpisode.SetEpisode(AValue: Integer);
+begin
+  if fEpisode=AValue then Exit;
+  fEpisode:=AValue;
+end;
+
+procedure TOMDBEpisode.SetSeason(AValue: Integer);
+begin
+  if fSeason=AValue then Exit;
+  fSeason:=AValue;
+end;
+
+procedure TOMDBEpisode.SetSeriesID(AValue: string);
+begin
+  if fSeriesID=AValue then Exit;
+  fSeriesID:=AValue;
+end;
+
+{ TOMDBSeries }
+
+procedure TOMDBSeries.SetTotalSeasons(AValue: integer);
+begin
+  if fTotalSeasons=AValue then Exit;
+  fTotalSeasons:=AValue;
+end;
+
+{ TOMDBGame }
+
+procedure TOMDBGame.SetBoxOffice(AValue: string);
+begin
+  if FBoxOffice=AValue then Exit;
+  FBoxOffice:=AValue;
+end;
+
+procedure TOMDBGame.SetDVD(AValue: string);
+begin
+  if FDVD=AValue then Exit;
+  FDVD:=AValue;
+end;
+
+procedure TOMDBGame.SetProduction(AValue: string);
+begin
+  if FProduction=AValue then Exit;
+  FProduction:=AValue;
+end;
+
+procedure TOMDBGame.SetWebsite(AValue: string);
+begin
+  if FWebsite=AValue then Exit;
+  FWebsite:=AValue;
+end;
+
+{ TOMDBMOvie }
+
+procedure TOMDBMOvie.SetDVD(AValue: string);
+begin
+  if FDVD=AValue then Exit;
+  FDVD:=AValue;
+end;
+
+procedure TOMDBMOvie.SetProduction(AValue: string);
+begin
+  if FProduction=AValue then Exit;
+  FProduction:=AValue;
+end;
+
+procedure TOMDBMOvie.SetWebsite(AValue: string);
+begin
+  if FWebsite=AValue then Exit;
+  FWebsite:=AValue;
+end;
+
+procedure TOMDBMOvie.SetBoxOffice(AValue: string);
+begin
+  if FBoxOffice=AValue then Exit;
+  FBoxOffice:=AValue;
+end;
+
+{ TOMDBSearch }
+
+procedure TOMDBSearch.SetTotalResults(AValue: Integer);
+begin
+  if FTotalResults=AValue then Exit;
+  FTotalResults:=AValue;
+end;
+
+constructor TOMDBSearch.Create(aJSON: string);
+begin
+  fSearch:= TCollection.Create(TOMDBSearchItem);
+  inherited Create(aJSON);
+end;
+
+destructor TOMDBSearch.Destroy;
+begin
+  fSearch.Free;
+  inherited Destroy;
+end;
+
+{ TOMDBSearchItem }
+
+procedure TOMDBSearchItem.SetTitle(AValue: string);
+begin
+  if FTitle=AValue then Exit;
+  FTitle:=AValue;
+end;
+
+procedure TOMDBSearchItem.SetimdbID(AValue: string);
+begin
+  if FimdbID=AValue then Exit;
+  FimdbID:=AValue;
+end;
+
+procedure TOMDBSearchItem.SetPoster(AValue: string);
+begin
+  if FPoster=AValue then Exit;
+  FPoster:=AValue;
+end;
+
+procedure TOMDBSearchItem.SetYear(AValue: string);
+begin
+  if FYear=AValue then Exit;
+  FYear:=AValue;
+end;
+
 { TOMDBAPIError }
 
 procedure TOMDBAPIError.SetError(AValue: string);
@@ -200,145 +422,121 @@ end;
 
 { TOMDBMovie }
 
-constructor TOMDBMovie.Create(aJSON: string);
+constructor TOMDBMedia.Create(aJSON: string);
 begin
   FRatings:= TCollection.Create(TOMDBRatingItem);
   inherited Create(aJSON);
 end;
 
-destructor TOMDBMovie.Destroy;
+destructor TOMDBMedia.Destroy;
 begin
   FRatings.Free;
   inherited Destroy;
 end;
 
-procedure TOMDBMovie.SetGenre(AValue: string);
+procedure TOMDBMedia.SetGenre(AValue: string);
 begin
   if fGenre = AValue then Exit;
   fGenre:= AValue;
 end;
 
-procedure TOMDBMovie.SetimdbID(AValue: string);
+procedure TOMDBMedia.SetimdbID(AValue: string);
 begin
   if FimdbID=AValue then Exit;
   FimdbID:=AValue;
 end;
 
-procedure TOMDBMovie.SetimdbRating(AValue: string);
+procedure TOMDBMedia.SetimdbRating(AValue: string);
 begin
   if FimdbRating=AValue then Exit;
   FimdbRating:=AValue;
 end;
 
-procedure TOMDBMovie.SetimdbVotes(AValue: string);
+procedure TOMDBMedia.SetimdbVotes(AValue: string);
 begin
   if FimdbVotes=AValue then Exit;
   FimdbVotes:=AValue;
 end;
 
-procedure TOMDBMovie.SetLanguage(AValue: string);
+procedure TOMDBMedia.SetLanguage(AValue: string);
 begin
   if FLanguage=AValue then Exit;
   FLanguage:=AValue;
 end;
 
-procedure TOMDBMovie.SetMetascore(AValue: string);
+procedure TOMDBMedia.SetMetascore(AValue: string);
 begin
   if FMetascore=AValue then Exit;
   FMetascore:=AValue;
 end;
 
-procedure TOMDBMovie.SetPlot(AValue: string);
+procedure TOMDBMedia.SetPlot(AValue: string);
 begin
   if FPlot=AValue then Exit;
   FPlot:=AValue;
 end;
 
-procedure TOMDBMovie.SetPoster(AValue: string);
+procedure TOMDBMedia.SetPoster(AValue: string);
 begin
   if FPoster=AValue then Exit;
   FPoster:=AValue;
 end;
 
-procedure TOMDBMovie.SetProduction(AValue: string);
-begin
-  if FProduction=AValue then Exit;
-  FProduction:=AValue;
-end;
-
-procedure TOMDBMovie.SetDirector(AValue: string);
+procedure TOMDBMedia.SetDirector(AValue: string);
 begin
   if FDirector=AValue then Exit;
   FDirector:=AValue;
 end;
 
-procedure TOMDBMovie.SetDVD(AValue: string);
-begin
-  if FDVD=AValue then Exit;
-  FDVD:=AValue;
-end;
-
-procedure TOMDBMovie.SetActors(AValue: string);
+procedure TOMDBMedia.SetActors(AValue: string);
 begin
   if FActors=AValue then Exit;
   FActors:=AValue;
 end;
 
-procedure TOMDBMovie.SetAwards(AValue: string);
+procedure TOMDBMedia.SetAwards(AValue: string);
 begin
   if FAwards=AValue then Exit;
   FAwards:=AValue;
 end;
 
-procedure TOMDBMovie.SetBoxOffice(AValue: string);
-begin
-  if FBoxOffice=AValue then Exit;
-  FBoxOffice:=AValue;
-end;
-
-procedure TOMDBMovie.SetCountry(AValue: string);
+procedure TOMDBMedia.SetCountry(AValue: string);
 begin
   if FCountry=AValue then Exit;
   FCountry:=AValue;
 end;
 
-procedure TOMDBMovie.SetRated(AValue: string);
+procedure TOMDBMedia.SetRated(AValue: string);
 begin
   if FRated=AValue then Exit;
   FRated:=AValue;
 end;
 
-procedure TOMDBMovie.SetReleased(AValue: string);
+procedure TOMDBMedia.SetReleased(AValue: string);
 begin
   if FReleased=AValue then Exit;
   FReleased:=AValue;
 end;
 
-procedure TOMDBMovie.SetRuntime(AValue: string);
+procedure TOMDBMedia.SetRuntime(AValue: string);
 begin
   if FRuntime=AValue then Exit;
   FRuntime:=AValue;
 end;
 
-procedure TOMDBMovie.SetTitle(AValue: string);
+procedure TOMDBMedia.SetTitle(AValue: string);
 begin
   if fTitle = AValue then Exit;
   fTitle:= AValue;
 end;
 
-procedure TOMDBMovie.SetWebsite(AValue: string);
-begin
-  if FWebsite=AValue then Exit;
-  FWebsite:=AValue;
-end;
-
-procedure TOMDBMovie.SetWriter(AValue: string);
+procedure TOMDBMedia.SetWriter(AValue: string);
 begin
   if FWriter=AValue then Exit;
   FWriter:=AValue;
 end;
 
-procedure TOMDBMovie.SetYear(AValue: string);
+procedure TOMDBMedia.SetYear(AValue: string);
 begin
   if fYear= AValue then Exit;
   fYear:= AValue;
@@ -396,6 +594,15 @@ begin
   Result:= '&s=' + EncodeURLElement(aSearch);
 end;
 
+function TOMDB.PageParam(aPage: string): string;
+var
+  p: Integer;
+begin
+  if TryStrToInt(aPage,p) then
+    if (p > 0) and (p <= 100) then
+      Result:= '&page=' + aPage;
+end;
+
 function TOMDB.MovieParam: string;
 begin
   Result:= '&type=movie';
@@ -409,6 +616,11 @@ end;
 function TOMDB.EpisodeParam: string;
 begin
   Result:= '&type=episode';
+end;
+
+function TOMDB.GameParam: string;
+begin
+  Result:= '&type=game';
 end;
 
 function TOMDB.RequestURL(aParams: string): string;
@@ -437,6 +649,7 @@ end;
 function TOMDB.ProcessRequest(aJSON: string): TCustomJSONResponse;
 var
   json: TJSONObject;
+  data: TJSONdata;
 begin
   Result:= nil;
   try
@@ -455,16 +668,30 @@ begin
     else
       begin
         if json.FindPath('Response').AsString = 'True' then
-          begin
-              if json.FindPath('Type').AsString = 'movie' then
-                Result:= TOMDBMovie.Create(aJSON);
-              if json.FindPath('Type').AsString = 'series' then
-                Result:= TCustomJSONResponse.Create(aJSON);        // TODO: series
-              if json.FindPath('Type').AsString = 'episode' then
-                Result:= TCustomJSONResponse.Create(aJSON);        // TODO: episode
-          end
-        else
-          Result:= TOMDBAPIError.Create(aJSON);
+          try
+            data:= json.FindPath('Type');
+            if Assigned(data) then
+              begin
+                if data.AsString = 'movie' then
+                  Result:= TOMDBMovie.Create(aJSON);
+                if data.AsString = 'series' then
+                  Result:= TOMDBSeries.Create(aJSON);
+                if data.AsString = 'episode' then
+                  Result:= TOMDBEpisode.Create(aJSON);
+                if data.AsString = 'game' then
+                  Result:= TOMDBGame.Create(aJSON);
+              end
+            else
+            begin
+             data:= json.FindPath('Search');
+            if Assigned(data) then
+              Result:= TOMDBSearch.Create(aJSON);
+
+            end;
+
+          except
+            Result:= TOMDBAPIError.Create(aJSON);
+          end;
       end;
   except
     Result:= TOMDBAPIError.Create;
@@ -509,6 +736,33 @@ begin
   Result:= GetResponse(SeriesParam + TitleParam(aTitle) + YearParam(aYear));
 end;
 
+function TOMDB.GetSeriesByIMDBid(aIMDBid: string): TCustomJSONResponse;
+begin
+  Result:= GetResponse(SeriesParam + IMDBidParam(aIMDBid));
+end;
+
+function TOMDB.GetEpisodeByTitle(aTitle: string; aYear: string
+  ): TCustomJSONResponse;
+begin
+  Result:= GetResponse(EpisodeParam + TitleParam(aTitle) + YearParam(aYear));
+end;
+
+function TOMDB.GetEpisodeByIMDBid(aIMDBid: string): TCustomJSONResponse;
+begin
+  Result:= GetResponse(EpisodeParam + IMDBidParam(aIMDBid));
+end;
+
+function TOMDB.GetGameByTitle(aTitle: string; aYear: string
+  ): TCustomJSONResponse;
+begin
+  Result:= GetResponse(GameParam + TitleParam(aTitle) + YearParam(aYear));
+end;
+
+function TOMDB.GetGameByIMDBid(aIMDBid: string): TCustomJSONResponse;
+begin
+  Result:= GetResponse(GameParam + IMDBidParam(aIMDBid));
+end;
+
 function TOMDB.Search(aTitle: string; aYear: string): TCustomJSONResponse;
 begin               
   Result:= GetResponse(SearchParam(aTitle) + YearParam(aYear));
@@ -517,6 +771,22 @@ end;
 function TOMDB.SearchMovie(aTitle: string; aYear: string): TCustomJSONResponse;
 begin
   Result:= GetResponse(MovieParam + SearchParam(aTitle) + YearParam(aYear));
+end;
+
+function TOMDB.SearchSeries(aTitle: string; aYear: string): TCustomJSONResponse;
+begin
+  Result:= GetResponse(SeriesParam + SearchParam(aTitle) + YearParam(aYear));
+end;
+
+function TOMDB.SearchEpisode(aTitle: string; aYear: string
+  ): TCustomJSONResponse;
+begin
+  Result:= GetResponse(EpisodeParam + SearchParam(aTitle) + YearParam(aYear));
+end;
+
+function TOMDB.SearchGame(aTitle: string; aYear: string): TCustomJSONResponse;
+begin
+  Result:= GetResponse(GameParam + SearchParam(aTitle) + YearParam(aYear));
 end;
 
 end.
@@ -561,3 +831,173 @@ end.
 "Website" : "http://www.whatisthematrix.com",
 "Response" : "True"
 }
+
+{       // series
+  "Title" : "A glitch in the Matrix",
+  "Year" : "2021–",
+  "Rated" : "N/A",
+  "Released" : "01 May 2021",
+  "Runtime" : "N/A",
+  "Genre" : "Documentary",
+  "Director" : "N/A",
+  "Writer" : "N/A",
+  "Actors" : "Samantha Goldberg, Matthew Campbell, Martyn Hale, Dave McNulty",
+  "Plot" : "N/A",
+  "Language" : "N/A",
+  "Country" : "USA",
+  "Awards" : "N/A",
+  "Poster" : "https://m.media-amazon.com/images/M/MV5BM2Y1NDgwMTYtOTUzZi00M2I1LTkwMzAtOWVlNGY4NDliMzI3XkEyXkFqcGdeQXVyMTI2NDg0Mzc2._V1_SX300.jpg",
+  "Ratings" : [
+  ],
+  "Metascore" : "N/A",
+  "imdbRating" : "N/A",
+  "imdbVotes" : "N/A",
+  "imdbID" : "tt13285880",
+  "Type" : "series",
+  "totalSeasons" : "N/A",
+  "Response" : "True"
+}
+
+{  // episode
+  "Title" : "Tabula Rasa",
+  "Year" : "2004",
+  "Rated" : "TV-14",
+  "Released" : "06 Oct 2004",
+  "Season" : "1",
+  "Episode" : "3",
+  "Runtime" : "43 min",
+  "Genre" : "Adventure, Drama, Fantasy, Mystery, Sci-Fi, Thriller",
+  "Director" : "Jack Bender",
+  "Writer" : "Jeffrey Lieber (created by), J.J. Abrams (created by), Damon Lindelof (created by), Damon Lindelof",
+  "Actors" : "Naveen Andrews, Emilie de Ravin, Matthew Fox, Jorge Garcia",
+  "Plot" : "Jack and Hurley discover an alarming secret about Kate, while the marshal's life hangs in the balance.",
+  "Language" : "English, Korean",
+  "Country" : "USA",
+  "Awards" : "N/A",
+  "Poster" : "https://m.media-amazon.com/images/M/MV5BMTY2NTU2MTMyN15BMl5BanBnXkFtZTgwMTgzNDY2MjE@._V1_SX300.jpg",
+  "Ratings" : [
+    {
+      "Source" : "Internet Movie Database",
+      "Value" : "8.5/10"
+    }
+  ],
+  "Metascore" : "N/A",
+  "imdbRating" : "8.5",
+  "imdbVotes" : "5740",
+  "imdbID" : "tt0636294",
+  "seriesID" : "tt0411008",
+  "Type" : "episode",
+  "Response" : "True"
+}
+
+{   // game
+  "Title":"Enter the Matrix",
+  "Year":"2003",
+  "Rated":"T",
+  "Released":"15 May 2003",
+  "Runtime":"N/A",
+  "Genre":"Action, Adventure, Sci-Fi, Thriller",
+  "Director":"Lana Wachowski, Lilly Wachowski",
+  "Writer":"Lilly Wachowski, Lana Wachowski",
+  "Actors":"Mary Alice, Christine Anu, Steve Bastoni, Don Battee",
+  "Plot":"The game's story picks up just before The Matrix Reloaded and runs parallel to that of the film. Bend the rules of the Matrix with martial arts, pilot the fastest hovercraft in the fleet, or just fight with lots of guns.",
+  "Language":"English",
+  "Country":"USA",
+  "Awards":"2 wins & 2 nominations.",
+  "Poster":"https://m.media-amazon.com/images/M/MV5BNWM3MDU2MWQtYjdlNC00NDBlLTkyNGMtNjdhYjdlNTdiNTFlXkEyXkFqcGdeQXVyNTEwNDY2MjU@._V1_SX300.jpg",
+  "Ratings":[
+    {
+      "Source":"Internet Movie Database",
+      "Value":"6.9/10"
+    }
+  ],
+  "Metascore":"N/A",
+  "imdbRating":"6.9",
+  "imdbVotes":"3,263",
+  "imdbID":"tt0277828",
+  "Type":"game",
+  "DVD":"N/A",
+  "BoxOffice":"N/A",
+  "Production":"N/A",
+  "Website":"N/A",
+  "Response":"True"
+  }
+
+
+{       // search
+  "Search" : [
+    {
+      "Title" : "The Matrix",
+      "Year" : "1999",
+      "imdbID" : "tt0133093",
+      "Type" : "movie",
+      "Poster" : "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"
+    },
+    {
+      "Title" : "The Matrix Reloaded",
+      "Year" : "2003",
+      "imdbID" : "tt0234215",
+      "Type" : "movie",
+      "Poster" : "https://m.media-amazon.com/images/M/MV5BODE0MzZhZTgtYzkwYi00YmI5LThlZWYtOWRmNWE5ODk0NzMxXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"
+    },
+    {
+      "Title" : "The Matrix Revolutions",
+      "Year" : "2003",
+      "imdbID" : "tt0242653",
+      "Type" : "movie",
+      "Poster" : "https://m.media-amazon.com/images/M/MV5BNzNlZTZjMDctZjYwNi00NzljLWIwN2QtZWZmYmJiYzQ0MTk2XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_SX300.jpg"
+    },
+    {
+      "Title" : "The Matrix Revisited",
+      "Year" : "2001",
+      "imdbID" : "tt0295432",
+      "Type" : "movie",
+      "Poster" : "https://m.media-amazon.com/images/M/MV5BMTIzMTA4NDI4NF5BMl5BanBnXkFtZTYwNjg5Nzg4._V1_SX300.jpg"
+    },
+    {
+      "Title" : "Enter the Matrix",
+      "Year" : "2003",
+      "imdbID" : "tt0277828",
+      "Type" : "game",
+      "Poster" : "https://m.media-amazon.com/images/M/MV5BNWM3MDU2MWQtYjdlNC00NDBlLTkyNGMtNjdhYjdlNTdiNTFlXkEyXkFqcGdeQXVyNTEwNDY2MjU@._V1_SX300.jpg"
+    },
+    {
+      "Title" : "The Matrix: Path of Neo",
+      "Year" : "2005",
+      "imdbID" : "tt0451118",
+      "Type" : "game",
+      "Poster" : "https://m.media-amazon.com/images/M/MV5BZGFiNGU4MjEtODM2ZC00OTg0LThkNmEtZTBlN2FkMmFjOWYzXkEyXkFqcGdeQXVyNTEwNDY2MjU@._V1_SX300.jpg"
+    },
+    {
+      "Title" : "CR: Enter the Matrix",
+      "Year" : "2009",
+      "imdbID" : "tt1675286",
+      "Type" : "game",
+      "Poster" : "https://m.media-amazon.com/images/M/MV5BMTExMzY3NTQ1NjleQTJeQWpwZ15BbWU3MDAyMjk2NzM@._V1_SX300.jpg"
+    },
+    {
+      "Title" : "A Glitch in the Matrix",
+      "Year" : "2021",
+      "imdbID" : "tt9847360",
+      "Type" : "movie",
+      "Poster" : "https://m.media-amazon.com/images/M/MV5BMWRhNGY3NGQtMDAxMS00YjY2LTgzOTUtZjljZmUyYWQwMGI2XkEyXkFqcGdeQXVyMDM2NDM2MQ@@._V1_SX300.jpg"
+    },
+    {
+      "Title" : "Sex and the Matrix",
+      "Year" : "2000",
+      "imdbID" : "tt0274085",
+      "Type" : "movie",
+      "Poster" : "N/A"
+    },
+    {
+      "Title" : "Making 'The Matrix'",
+      "Year" : "1999",
+      "imdbID" : "tt0365467",
+      "Type" : "movie",
+      "Poster" : "https://m.media-amazon.com/images/M/MV5BZjJjMTg5MTEtMDkwMy00ZjUyLTg5ODYtMmNmY2ZiNGVlZTdjXkEyXkFqcGdeQXVyODA1NjQ0OTY@._V1_SX300.jpg"
+    }
+  ],
+  "totalResults" : "76",
+  "Response" : "True"
+}
+
