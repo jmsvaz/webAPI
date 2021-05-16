@@ -125,10 +125,16 @@ type
       fTimeOut: Integer;
       fVersion: TOMDBAPIVersion;
       function YearParam(aYear: string): string;
+      function TitleParam(aTitle: string): string;
+      function IMDBidParam(aIMDBid: string): string;
+      function SearchParam(aSearch: string): string;
+      function MovieParam: string;
+      function SeriesParam: string;
+      function EpisodeParam: string;
       function RequestURL(aParams: string): string;
       function DoRequest(aURL: string): string;
       function ProcessRequest(aJSON: string): TCustomJSONResponse;
-      function ValidYear(aYear: string): Boolean;
+      function GetResponse(aParams: string): TCustomJSONResponse;
       procedure SetAPIKey(AValue: string);
       procedure SetTimeOut(AValue: Integer);
       procedure SetVersion(AValue: TOMDBAPIVersion);
@@ -138,8 +144,11 @@ type
       property TimeOut: Integer read fTimeOut write SetTimeOut;
       property APIKey: string read fAPIKey write SetAPIKey;
       property Version: TOMDBAPIVersion read fVersion write SetVersion;
+      function GetByTitle(aTitle: string; aYear: string = ''): TCustomJSONResponse;
+      function GetByIMDBid(aIMDBid: string): TCustomJSONResponse;
       function GetMovieByTitle(aTitle: string; aYear: string = ''): TCustomJSONResponse;
       function GetMovieByIMDBid(aIMDBid: string): TCustomJSONResponse;
+      function GetSeriesByTitle(aTitle: string; aYear: string = ''): TCustomJSONResponse;
       function Search(aTitle: string; aYear: string = ''): TCustomJSONResponse;
       function SearchMovie(aTitle: string; aYear: string = ''): TCustomJSONResponse;
   end;
@@ -344,7 +353,6 @@ begin
   APIKey:= aAPIKey;
 end;
 
-
 procedure TOMDB.SetAPIKey(AValue: string);
 begin
   if fAPIKey = AValue then Exit;
@@ -364,15 +372,49 @@ begin
 end;
 
 function TOMDB.YearParam(aYear: string): string;
+var
+  y: Integer;
 begin
-  if ValidYear(aYear) then
+  if (Length(aYear) > 0) and TryStrToInt(aYear,y) then
     Result:= '&y=' + EncodeURLElement(aYear);
+end;
+
+
+function TOMDB.TitleParam(aTitle: string): string;
+begin
+  Result:= '&t=' + EncodeURLElement(aTitle);
+end;
+
+function TOMDB.IMDBidParam(aIMDBid: string): string;
+begin
+  if ValidIMDBid(aIMDBid) then
+    Result:= '&i=' + EncodeURLElement(aIMDBid);
+end;
+
+function TOMDB.SearchParam(aSearch: string): string;
+begin
+  Result:= '&s=' + EncodeURLElement(aSearch);
+end;
+
+function TOMDB.MovieParam: string;
+begin
+  Result:= '&type=movie';
+end;
+
+function TOMDB.SeriesParam: string;
+begin
+  Result:= '&type=series';
+end;
+
+function TOMDB.EpisodeParam: string;
+begin
+  Result:= '&type=episode';
 end;
 
 function TOMDB.RequestURL(aParams: string): string;
 begin
   Result:= OMDBBASEURL + '?apikey=' + APIKey + '&v=' + OMDBVersionString[Version] +
-           '$r=json' + aParams;
+           '$r=json' + '&plot=full' + aParams;
 end;
 
 function TOMDB.DoRequest(aURL: string): string;
@@ -429,57 +471,52 @@ begin
   end;
 end;
 
-function TOMDB.ValidYear(aYear: string): Boolean;
+function TOMDB.GetResponse(aParams: string): TCustomJSONResponse;
 var
-  y: Integer;
+  completeURL: string;
+  aRequest: string;
 begin
-  Result:= (Length(aYear) > 0) and TryStrToInt(aYear,y);
+  completeURL:= RequestURL(aParams);
+  aRequest:= DoRequest(completeURL);
+  Result:= ProcessRequest(aRequest);
+end;
+
+
+function TOMDB.GetByTitle(aTitle: string; aYear: string): TCustomJSONResponse;
+begin
+  Result:= GetResponse(TitleParam(aTitle) + YearParam(aYear));
+end;
+
+function TOMDB.GetByIMDBid(aIMDBid: string): TCustomJSONResponse;
+begin
+  Result:= GetResponse(IMDBidParam(aIMDBid));
 end;
 
 function TOMDB.GetMovieByTitle(aTitle: string; aYear: string
   ): TCustomJSONResponse;
-var
-  completeURL: string;
-  aRequest: string;
 begin
-  Result:= nil;
-  completeURL:= RequestURL('&type=movie&plot=full&t=' + EncodeURLElement(aTitle) + YearParam(aYear));
-  aRequest:= DoRequest(completeURL);
-  Result:= ProcessRequest(aRequest);
+  Result:= GetResponse(MovieParam + TitleParam(aTitle) + YearParam(aYear));
 end;
 
 function TOMDB.GetMovieByIMDBid(aIMDBid: string): TCustomJSONResponse;
-var
-  completeURL: string;
-  aRequest: string;
-begin     
-  Result:= nil;
-  if not ValidIMDBid(aIMDBid) then Exit;
-  completeURL:= RequestURL('&plot=full&i=' + EncodeURLElement(aIMDBid));
-  aRequest:= DoRequest(completeURL);
-  Result:= ProcessRequest(aRequest);
+begin
+  Result:= GetResponse(MovieParam + IMDBidParam(aIMDBid));
+end;
+
+function TOMDB.GetSeriesByTitle(aTitle: string; aYear: string
+  ): TCustomJSONResponse;
+begin
+  Result:= GetResponse(SeriesParam + TitleParam(aTitle) + YearParam(aYear));
 end;
 
 function TOMDB.Search(aTitle: string; aYear: string): TCustomJSONResponse;
-var
-  completeURL: string;
-  aRequest: string;
-begin     
-  Result:= nil;
-  completeURL:= RequestURL('&plot=full&s=' + EncodeURLElement(aTitle) + YearParam(aYear));
-  aRequest:= DoRequest(completeURL);
-  Result:= ProcessRequest(aRequest);
+begin               
+  Result:= GetResponse(SearchParam(aTitle) + YearParam(aYear));
 end;
 
 function TOMDB.SearchMovie(aTitle: string; aYear: string): TCustomJSONResponse;
-var
-  completeURL: string;
-  aRequest: string;
-begin     
-  Result:= nil;
-  completeURL:= RequestURL('&type=movie&plot=full&s=' + EncodeURLElement(aTitle) + YearParam(aYear));
-  aRequest:= DoRequest(completeURL);
-  Result:= ProcessRequest(aRequest);
+begin
+  Result:= GetResponse(MovieParam + SearchParam(aTitle) + YearParam(aYear));
 end;
 
 end.
