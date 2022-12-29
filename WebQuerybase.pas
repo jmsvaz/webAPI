@@ -24,9 +24,25 @@ type
     property JSON: string read GetJSON write SetJSON;
   end;
 
+
+function ValidIMDBid(aID: string): Boolean;
+
 implementation
 
-uses fpjsonrtti;
+uses fpjsonrtti, RegExpr; 
+
+function ValidIMDBid(aID: string): Boolean;
+var
+  regex: TRegExpr;
+begin
+  regex:= TRegExpr.Create;
+  try
+    regex.Expression:= 'tt\d{5,7}';
+    Result:= regex.Exec(aID);
+  finally
+    regex.Free;
+  end;
+end;
 
 { TCustomJSONResponse }
 

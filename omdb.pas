@@ -251,20 +251,9 @@ type
 
 implementation
 
-uses fphttpclient, RegExpr;
+uses fphttpclient;
 
-function ValidIMDBid(aID: string): Boolean;
-var
-  regex: TRegExpr;
-begin
-  regex:= TRegExpr.Create;
-  try
-    regex.Expression:= 'tt\d{5,7}';
-    Result:= regex.Exec(aID);
-  finally
-    regex.Free;
-  end;
-end;
+
 
 
 
