@@ -15,16 +15,8 @@ type
 
   { TOMDBAPIError }
 
-  TOMDBAPIError = class(TCustomJSONResponse)
-    private
-      fError: string;
-      procedure SetError(AValue: string);
-    published
-      property Error: string read fError write SetError;
-  end;
-
+  TOMDBAPIError = class(TCustomJSONError);
   TOMDBAPIMovieNotFoundError = class(TOMDBAPIError);
-
   TOMDBAPIIncorrectIMDbIDError = class(TOMDBAPIError);
 
 
@@ -207,6 +199,7 @@ type
 
   TOMDB = class
     private
+      aCaption: string;
       fAPIKey: string;
       fTimeOut: Integer;
       fVersion: TOMDBAPIVersion;
@@ -232,6 +225,7 @@ type
       property TimeOut: Integer read fTimeOut write SetTimeOut;
       property APIKey: string read fAPIKey write SetAPIKey;
       property Version: TOMDBAPIVersion read fVersion write SetVersion;
+      property Caption: string read aCaption;
       function GetByTitle(aTitle: string; aYear: string = ''): TCustomJSONResponse;
       function GetByIMDBid(aIMDBid: string): TCustomJSONResponse;
       function GetMovieByTitle(aTitle: string; aYear: string = ''): TCustomJSONResponse;
@@ -251,11 +245,7 @@ type
 
 implementation
 
-uses fphttpclient;
-
-
-
-
+uses fphttpclient, opensslsockets;
 
 const
   OMDBBASEURL = 'http://www.omdbapi.com/';
@@ -387,13 +377,6 @@ begin
   FYear:=AValue;
 end;
 
-{ TOMDBAPIError }
-
-procedure TOMDBAPIError.SetError(AValue: string);
-begin
-  if FError=AValue then Exit;
-  FError:=AValue;
-end;
 
 { TOMDBRatingItem }
 
@@ -538,6 +521,7 @@ begin
   Version:= OMDBAPIv1;
   TimeOut:= 0; // Infinite timeout on most platforms
   APIKey:= aAPIKey;
+  aCaption:= 'OMDB';
 end;
 
 procedure TOMDB.SetAPIKey(AValue: string);

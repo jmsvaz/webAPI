@@ -5,7 +5,7 @@ unit uMain;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls, OMDB;
+  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls, OMDB, TMDB;
 
 type
 
@@ -23,6 +23,7 @@ type
     procedure FormDestroy(Sender: TObject);
   private    
     aOMDBAPI: TOMDB;
+    aTMDBAPI: TTMDB;
   public
 
   end;
@@ -44,8 +45,10 @@ const
 procedure TfmWebQuery.FormCreate(Sender: TObject);
 begin
   aOMDBAPI:= TOMDB.Create(OMDB_API_KEY);
+  aTMDBAPI:= TTMDB.Create(TMDB_USER_KEY);
 
-  cbSearchAPI.Items.Add('OMDB');
+  cbSearchAPI.Items.Add(aOMDBAPI.Caption);
+  cbSearchAPI.Items.Add(aTMDBAPI.Caption);
   cbSearchAPI.ItemIndex:= 0;
   cbSearchAPIChange(sender);
 end;
@@ -58,7 +61,7 @@ end;
 procedure TfmWebQuery.cbSearchAPIChange(Sender: TObject);
 begin
   cbSearchMethod.Items.Clear;
-  if cbSearchAPI.Items[cbSearchAPI.ItemIndex] = 'OMDB' then
+  if cbSearchAPI.Items[cbSearchAPI.ItemIndex] = aOMDBAPI.Caption then
     begin
       cbSearchMethod.Items.Add('By Title');
       cbSearchMethod.Items.Add('By IMDBid');
@@ -77,6 +80,10 @@ begin
       cbSearchMethod.Items.Add('Search Game');
       cbSearchMethod.ItemIndex:= 0;
     end;
+  if cbSearchAPI.Items[cbSearchAPI.ItemIndex] = aTMDBAPI.Caption then
+    begin
+      cbSearchMethod.Items.Add('Countries');
+    end;
 end;
 
 procedure TfmWebQuery.btSearchClick(Sender: TObject);
@@ -85,7 +92,7 @@ Var
 begin
   mmResult.Clear;
   try
-    if cbSearchAPI.Items[cbSearchAPI.ItemIndex] = 'OMDB' then
+    if cbSearchAPI.Items[cbSearchAPI.ItemIndex] = aOMDBAPI.Caption then
       begin
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'By Title' then
           aResult:= aOMDBAPI.GetByTitle(edSearch.Text);
@@ -117,22 +124,29 @@ begin
           aResult:= aOMDBAPI.SearchEpisode(edSearch.Text);
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Search Game' then
           aResult:= aOMDBAPI.SearchGame(edSearch.Text);
-      end;
-    if aResult is TOMDBMovie then
-      mmResult.Append('Movie Title: ' + TOMDBMovie(aResult).Title);
-    if aResult is TOMDBSeries then
-      mmResult.Append('Series Title: ' + TOMDBSeries(aResult).Title);
-    if aResult is TOMDBEpisode then
-      begin
-        mmResult.Append('Series ID: ' + TOMDBEpisode(aResult).seriesID);
-        mmResult.Append('Episode Title: ' + TOMDBEpisode(aResult).Title);
-      end;
-    if aResult is TOMDBGame then
-      mmResult.Append('Game Title: ' + TOMDBGame(aResult).Title);
-    if aResult is TOMDBSearch then
-      mmResult.Append('Search Result: ' + IntToStr(TOMDBSearch(aResult).TotalResults));
 
-    mmResult.Append(aResult.FormatJSON);
+        if aResult is TOMDBMovie then
+          mmResult.Append('Movie Title: ' + TOMDBMovie(aResult).Title);
+        if aResult is TOMDBSeries then
+          mmResult.Append('Series Title: ' + TOMDBSeries(aResult).Title);
+        if aResult is TOMDBEpisode then
+          begin
+            mmResult.Append('Series ID: ' + TOMDBEpisode(aResult).seriesID);
+            mmResult.Append('Episode Title: ' + TOMDBEpisode(aResult).Title);
+          end;
+        if aResult is TOMDBGame then
+          mmResult.Append('Game Title: ' + TOMDBGame(aResult).Title);
+        if aResult is TOMDBSearch then
+          mmResult.Append('Search Result: ' + IntToStr(TOMDBSearch(aResult).TotalResults));
+      end;
+    if cbSearchAPI.Items[cbSearchAPI.ItemIndex] = aTMDBAPI.Caption then
+      begin
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Countries' then
+          aResult:= aTMDBAPI.GetCountries;
+
+      end;
+    if Assigned(aResult) then
+      mmResult.Append(aResult.FormatJSON);
   except
     on e: Exception do
       begin

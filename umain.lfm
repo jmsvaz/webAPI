@@ -8,10 +8,10 @@ object fmWebQuery: TfmWebQuery
   ClientWidth = 864
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '2.0.12.0'
+  LCLVersion = '2.2.4.0'
   object edSearch: TEdit
     Left = 286
-    Height = 35
+    Height = 36
     Top = 21
     Width = 454
     Anchors = [akTop, akLeft, akRight]
@@ -39,7 +39,7 @@ object fmWebQuery: TfmWebQuery
   end
   object cbSearchAPI: TComboBox
     Left = 50
-    Height = 34
+    Height = 35
     Top = 21
     Width = 221
     ItemHeight = 0
@@ -50,7 +50,7 @@ object fmWebQuery: TfmWebQuery
   end
   object cbSearchMethod: TComboBox
     Left = 50
-    Height = 34
+    Height = 35
     Top = 72
     Width = 221
     ItemHeight = 0
