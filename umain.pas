@@ -86,6 +86,7 @@ begin
       cbSearchMethod.Items.Add('Countries');
       cbSearchMethod.Items.Add('Jobs');
       cbSearchMethod.Items.Add('Languages');
+      cbSearchMethod.Items.Add('Time Zones');
 
       cbSearchMethod.ItemIndex:= 0;
     end;
@@ -153,6 +154,8 @@ begin
           aResult:= aTMDBAPI.GetJobs;
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Languages' then
           aResult:= aTMDBAPI.GetLanguages;
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Time Zones' then
+          aResult:= aTMDBAPI.GetTimeZones;
       end;
     if Assigned(aResult) then
       begin

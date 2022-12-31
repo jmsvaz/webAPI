@@ -23,6 +23,7 @@ type
   TTMDBAPICountriesError = class(TTMDBCollectionError);
   TTMDBAPIJobsError = class(TTMDBCollectionError);
   TTMDBAPILanguagesError = class(TTMDBCollectionError);
+  TTMDBAPITimeZonesError = class(TTMDBCollectionError);
 
   { TTMDBCountryItem }
 
@@ -71,8 +72,6 @@ type
       procedure SetEnglish_name(AValue: string);
       procedure SetISO_3166_1(AValue: string);
       procedure SetName(AValue: string);
-    public
-
     published
       property ISO_3166_1: string read FISO_3166_1 write SetISO_3166_1;
       property English_name: string read FEnglish_name write SetEnglish_name;
@@ -80,6 +79,24 @@ type
   end;
 
   TTMDBLanguages = class(TCollectionJSONResponse);
+
+  { TTMDBTimeZoneItem }
+
+  TTMDBTimeZoneItem = class(TCollectionitem)
+    private
+      FISO_3166_1: string;
+      fZones: TStrings;
+      procedure SetISO_3166_1(AValue: string);
+
+    public
+      constructor Create(ACollection: TCollection); override;
+      destructor Destroy; override;
+    published
+      property ISO_3166_1: string read FISO_3166_1 write SetISO_3166_1;
+      property Zones: TStrings read fZones;
+  end;
+
+  TTMDBTimeZones = class(TCollectionJSONResponse);
 
   { TTMDB }
 
@@ -102,6 +119,7 @@ type
       function CountriesParam: string;
       function JobsParam: string;
       function LanguagesParam: string;
+      function TimeZonesParam: string;
     public
       constructor Create(aAPIKey: string = '');
       property TimeOut: Integer read fTimeOut write SetTimeOut;
@@ -112,6 +130,7 @@ type
       function GetCountries: TCollectionJSONResponse;
       function GetJobs: TCollectionJSONResponse;
       function GetLanguages: TCollectionJSONResponse;
+      function GetTimeZones: TCollectionJSONResponse;
     end;
 
 implementation
@@ -121,6 +140,26 @@ uses fphttpclient, Dialogs;
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBTimeZoneItem }
+
+procedure TTMDBTimeZoneItem.SetISO_3166_1(AValue: string);
+begin
+  if FISO_3166_1=AValue then Exit;
+  FISO_3166_1:=AValue;
+end;
+
+constructor TTMDBTimeZoneItem.Create(ACollection: TCollection);
+begin
+  inherited Create(ACollection);
+  fZones:= TStringList.Create;
+end;
+
+destructor TTMDBTimeZoneItem.Destroy;
+begin
+  fZones.Free;
+  inherited Destroy;
+end;
 
 { TTMDBLanguageItem }
 
@@ -266,6 +305,23 @@ end;
 function TTMDB.LanguagesParam: string;
 begin
   Result:= 'configuration/languages';
+end;
+
+function TTMDB.GetTimeZones: TCollectionJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= GetRequest(TimeZonesParam);
+    Result:= TTMDBTimeZones.Create(TTMDBTimeZoneItem, aRequest);
+  except
+    Result:= TTMDBAPITimeZonesError.Create(TTMDBLanguageItem);
+  end;
+end;
+
+function TTMDB.TimeZonesParam: string;
+begin
+  Result:= 'configuration/timezones';
 end;
 
 function TTMDB.GetRequest(const aParams: string): string;
