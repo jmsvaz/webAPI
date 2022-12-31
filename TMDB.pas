@@ -21,6 +21,8 @@ type
   TTMDBAPIIncorrectIMDbIDError = class(TTMDBAPIError);
 
   TTMDBAPICountriesError = class(TTMDBCollectionError);
+  TTMDBAPIJobsError = class(TTMDBCollectionError);
+  TTMDBAPILanguagesError = class(TTMDBCollectionError);
 
   { TTMDBCountryItem }
 
@@ -48,7 +50,7 @@ type
     private
       FDepartment: string;
       fJobs: TStrings;
-    procedure SetDepartment(AValue: string);
+      procedure SetDepartment(AValue: string);
     public
       constructor Create(ACollection: TCollection); override;
       destructor Destroy; override;
@@ -58,6 +60,26 @@ type
   end;
 
   TTMDBJobs = class(TCollectionJSONResponse);
+
+  { TTMDBLanguageItem }
+
+  TTMDBLanguageItem = class(TCollectionitem)
+    private
+      FEnglish_name: string;
+      FISO_3166_1: string;
+      FName: string;
+      procedure SetEnglish_name(AValue: string);
+      procedure SetISO_3166_1(AValue: string);
+      procedure SetName(AValue: string);
+    public
+
+    published
+      property ISO_3166_1: string read FISO_3166_1 write SetISO_3166_1;
+      property English_name: string read FEnglish_name write SetEnglish_name;
+      property Name: string read FName write SetName;
+  end;
+
+  TTMDBLanguages = class(TCollectionJSONResponse);
 
   { TTMDB }
 
@@ -79,6 +101,7 @@ type
       function GetResponse(aParams: string): TCustomJSONResponse;
       function CountriesParam: string;
       function JobsParam: string;
+      function LanguagesParam: string;
     public
       constructor Create(aAPIKey: string = '');
       property TimeOut: Integer read fTimeOut write SetTimeOut;
@@ -88,6 +111,7 @@ type
       property Language: string read FLanguage write SetLanguage;
       function GetCountries: TCollectionJSONResponse;
       function GetJobs: TCollectionJSONResponse;
+      function GetLanguages: TCollectionJSONResponse;
     end;
 
 implementation
@@ -97,6 +121,27 @@ uses fphttpclient, Dialogs;
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBLanguageItem }
+
+procedure TTMDBLanguageItem.SetISO_3166_1(AValue: string);
+begin
+  if FISO_3166_1=AValue then Exit;
+  FISO_3166_1:=AValue;
+end;
+
+procedure TTMDBLanguageItem.SetName(AValue: string);
+begin
+  if FName=AValue then Exit;
+  FName:=AValue;
+end;
+
+procedure TTMDBLanguageItem.SetEnglish_name(AValue: string);
+begin
+  if FEnglish_name=AValue then Exit;
+  FEnglish_name:=AValue;
+end;
+
 
 { TTMDBJobItem }
 
@@ -143,7 +188,7 @@ constructor TTMDB.Create(aAPIKey: string);
 begin
   Version:= TMDBAPIv3;
   TimeOut:= 0; // Infinite timeout on most platforms
-  Language:= 'en-US';
+  Language:= 'pt-BR';   //'en-US';
   APIKey:= aAPIKey;
   aCaption:= 'The Movie DB';
 end;  
@@ -180,7 +225,7 @@ begin
     aRequest:= GetRequest(CountriesParam);
     Result:= TTMDBCountries.Create(TTMDBCountryItem, aRequest);
   except
-    //Result:= TTMDBAPICountriesError.Create('');
+    Result:= TTMDBAPICountriesError.Create(TTMDBCountryItem);
   end;
 end;
 
@@ -197,13 +242,30 @@ begin
     aRequest:= GetRequest(JobsParam);
     Result:= TTMDBJobs.Create(TTMDBJobItem, aRequest);
   except
-    //Result:= TTMDBAPIJobsError.Create('');
+    Result:= TTMDBAPIJobsError.Create(TTMDBJobItem);
   end;
 end;
 
 function TTMDB.JobsParam: string;
 begin
   Result:= 'configuration/jobs';
+end;
+
+function TTMDB.GetLanguages: TCollectionJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= GetRequest(LanguagesParam);
+    Result:= TTMDBLanguages.Create(TTMDBLanguageItem, aRequest);
+  except
+    Result:= TTMDBAPILanguagesError.Create(TTMDBLanguageItem);
+  end;
+end;
+
+function TTMDB.LanguagesParam: string;
+begin
+  Result:= 'configuration/languages';
 end;
 
 function TTMDB.GetRequest(const aParams: string): string;

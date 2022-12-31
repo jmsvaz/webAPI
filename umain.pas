@@ -84,7 +84,8 @@ begin
   if cbSearchAPI.Items[cbSearchAPI.ItemIndex] = aTMDBAPI.Caption then
     begin
       cbSearchMethod.Items.Add('Countries');
-       cbSearchMethod.Items.Add('Jobs');
+      cbSearchMethod.Items.Add('Jobs');
+      cbSearchMethod.Items.Add('Languages');
 
       cbSearchMethod.ItemIndex:= 0;
     end;
@@ -150,6 +151,8 @@ begin
           aResult:= aTMDBAPI.GetCountries;
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Jobs' then
           aResult:= aTMDBAPI.GetJobs;
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Languages' then
+          aResult:= aTMDBAPI.GetLanguages;
       end;
     if Assigned(aResult) then
       begin
