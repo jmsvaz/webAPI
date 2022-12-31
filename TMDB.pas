@@ -16,35 +16,31 @@ type
   { TTMDBAPIError }
 
   TTMDBAPIError = class(TCustomJSONError);
+  TTMDBCollectionError = class(TCollectionJSONError);
   TTMDBAPIMovieNotFoundError = class(TTMDBAPIError);
   TTMDBAPIIncorrectIMDbIDError = class(TTMDBAPIError);
 
-  TTMDBAPICountriesError = class(TTMDBAPIError);
+  TTMDBAPICountriesError = class(TTMDBCollectionError);
 
   { TTMDBCountryItem }
 
   TTMDBCountryItem = class(TCollectionitem)
     private
-      FEnglissName: string;
+      Fenglish_name: string;
       FISO_3116_1: string;
-      procedure SetEnglissName(AValue: string);
+      Fnative_name: string;
+      procedure SetEnglish_name(AValue: string);
       procedure SetISO_3116_1(AValue: string);
+      procedure Setnative_name(AValue: string);
     published
-      property ISO_3116_1: string read FISO_3116_1 write SetISO_3116_1;
-      property EnglissName: string read FEnglissName write SetEnglissName;
+      property iso_3166_1: string read FISO_3116_1 write SetISO_3116_1;
+      property english_name: string read Fenglish_name write SetEnglish_name;
+      property native_name: string read Fnative_name write Setnative_name;
   end;
 
   { TTMDBCountries }
 
-  TTMDBCountries = class(TCustomJSONResponse)
-    private
-      FCountries: TCollection;
-    public
-      constructor Create(aJSON: string = '');
-      destructor Destroy; override;
-    published
-      property Countries: TCollection read FCountries;
-    end;
+  TTMDBCountries = class(TCollectionJSONResponse);
 
   { TTMDB }
 
@@ -72,31 +68,16 @@ type
       property Version: TTMDBAPIVersion read fVersion write SetVersion;
       property Caption: string read aCaption;
       property Language: string read FLanguage write SetLanguage;
-      function GetCountries: TCustomJSONResponse;
+      function GetCountries: TCollectionJSONResponse;
     end;
 
 implementation
 
-uses fphttpclient;
+uses fphttpclient{, Dialogs};
 
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
-
-{ TTMDBCountries }
-
-constructor TTMDBCountries.Create(aJSON: string);
-begin
-  FCountries:= TCollection.Create(TTMDBCountryItem);
-  inherited Create(aJSON);
-end;
-
-destructor TTMDBCountries.Destroy;
-begin
-  FCountries.Free;
-  inherited Destroy;
-end;
-
 
 { TTMDBCountryItem }
 
@@ -106,10 +87,16 @@ begin
   FISO_3116_1:=AValue;
 end;
 
-procedure TTMDBCountryItem.SetEnglissName(AValue: string);
+procedure TTMDBCountryItem.Setnative_name(AValue: string);
 begin
-  if FEnglissName=AValue then Exit;
-  FEnglissName:=AValue;
+  if Fnative_name=AValue then Exit;
+  Fnative_name:=AValue;
+end;
+
+procedure TTMDBCountryItem.SetEnglish_name(AValue: string);
+begin
+  if Fenglish_name=AValue then Exit;
+  Fenglish_name:=AValue;
 end;
 
 { TTMDB }
@@ -128,15 +115,15 @@ begin
   Result:= 'configuration/countries';
 end;
 
-function TTMDB.GetCountries: TCustomJSONResponse;
+function TTMDB.GetCountries: TCollectionJSONResponse;
 var
   aRequest: string;
 begin
   try
     aRequest:= GetRequest(CountriesParam);
-    Result:= TTMDBCountries.Create(aRequest);
+    Result:= TTMDBCountries.Create(TTMDBCountryItem, aRequest);
   except
-    Result:= TTMDBAPICountriesError.Create;
+    //Result:= TTMDBAPICountriesError.Create('');
   end;
 end;
 
@@ -151,6 +138,7 @@ var
   completeURL: string;
 begin
   completeURL:= RequestURL(aParams);
+//  Showmessage(completeURL);
   Result:= DoRequest(completeURL);
 end;
 
@@ -178,7 +166,7 @@ begin
   //https://api.themoviedb.org/3/movie/{movie_id}?api_key=<<api_key>>&language=en-US
 
   Result:= TMDBBASEURL + TMDBVersionString[Version] + '/' + aParams + '?api_key='
-           + APIKey + '?language=' + Language;
+           + APIKey + '&language=' + Language;
 end;
 
 function TTMDB.DoRequest(aURL: string): string;

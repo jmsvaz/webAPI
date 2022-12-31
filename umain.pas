@@ -45,7 +45,7 @@ const
 procedure TfmWebQuery.FormCreate(Sender: TObject);
 begin
   aOMDBAPI:= TOMDB.Create(OMDB_API_KEY);
-  aTMDBAPI:= TTMDB.Create(TMDB_USER_KEY);
+  aTMDBAPI:= TTMDB.Create(TMDB_API_KEY);
 
   cbSearchAPI.Items.Add(aOMDBAPI.Caption);
   cbSearchAPI.Items.Add(aTMDBAPI.Caption);
@@ -78,17 +78,20 @@ begin
       cbSearchMethod.Items.Add('Search Series');
       cbSearchMethod.Items.Add('Search Episode');
       cbSearchMethod.Items.Add('Search Game');
+
       cbSearchMethod.ItemIndex:= 0;
     end;
   if cbSearchAPI.Items[cbSearchAPI.ItemIndex] = aTMDBAPI.Caption then
     begin
       cbSearchMethod.Items.Add('Countries');
+
+      cbSearchMethod.ItemIndex:= 0;
     end;
 end;
 
 procedure TfmWebQuery.btSearchClick(Sender: TObject);
 Var
-  aResult: TCustomJSONResponse;
+  aResult: TPersistent;
 begin
   mmResult.Clear;
   try
@@ -146,7 +149,10 @@ begin
 
       end;
     if Assigned(aResult) then
-      mmResult.Append(aResult.FormatJSON);
+      if aResult is TCustomJSONResponse then
+        mmResult.Append(TCustomJSONResponse(aResult).FormatJSON);
+    if aResult is TCollectionJSONResponse then
+      mmResult.Append(TCollectionJSONResponse(aResult).FormatJSON);
   except
     on e: Exception do
       begin

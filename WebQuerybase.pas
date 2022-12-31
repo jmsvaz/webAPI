@@ -11,7 +11,7 @@ type
 
 { TCustomJSONResponse }
 
-  TCustomJSONResponse = class
+  TCustomJSONResponse = class(TPersistent)
     private
       fJSONData: TJSONData;
       function GetJSON: string;
@@ -50,6 +50,16 @@ type
       property Error: string read fError write SetError;
   end;
 
+  { TCollectionJSONError }
+
+  TCollectionJSONError = class(TCollectionJSONResponse)
+    private
+      fError: string;
+      procedure SetError(AValue: string);
+    published
+      property Error: string read fError write SetError;
+  end;
+
 function ValidIMDBid(aID: string): Boolean;
 
 implementation
@@ -68,6 +78,16 @@ begin
     regex.Free;
   end;
 end;
+
+{ TCollectionJSONError }
+
+procedure TCollectionJSONError.SetError(AValue: string);
+begin
+  if fError=AValue then Exit;
+  fError:=AValue;
+end;
+
+
 
 { TCustomJSONError }
 
@@ -89,8 +109,11 @@ procedure TCollectionJSONResponse.SetJSON(AValue: string);
 begin
   if Assigned(fJSONData) then
     FreeAndNil(fJSONData);
-  fJSONData:= fpJSON.GetJSON(AValue);
-  DeStream;
+  if AValue <> EmptyStr then
+    begin
+      fJSONData:= fpJSON.GetJSON(AValue);
+      DeStream;
+    end;
 end;
 
 procedure TCollectionJSONResponse.DeStream;
