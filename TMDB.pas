@@ -67,13 +67,13 @@ type
   TTMDBLanguageItem = class(TCollectionitem)
     private
       FEnglish_name: string;
-      FISO_3166_1: string;
+      FISO_639_1: string;
       FName: string;
       procedure SetEnglish_name(AValue: string);
-      procedure SetISO_3166_1(AValue: string);
+      procedure SetISO_639_1(AValue: string);
       procedure SetName(AValue: string);
     published
-      property ISO_3166_1: string read FISO_3166_1 write SetISO_3166_1;
+      property ISO_639_1: string read FISO_639_1 write SetISO_639_1;
       property English_name: string read FEnglish_name write SetEnglish_name;
       property Name: string read FName write SetName;
   end;
@@ -163,10 +163,10 @@ end;
 
 { TTMDBLanguageItem }
 
-procedure TTMDBLanguageItem.SetISO_3166_1(AValue: string);
+procedure TTMDBLanguageItem.SetISO_639_1(AValue: string);
 begin
-  if FISO_3166_1=AValue then Exit;
-  FISO_3166_1:=AValue;
+  if FISO_639_1=AValue then Exit;
+  FISO_639_1:=AValue;
 end;
 
 procedure TTMDBLanguageItem.SetName(AValue: string);
