@@ -19,6 +19,7 @@ type
   TTMDBCollectionError = class(TCollectionJSONError);
   TTMDBAPIMovieNotFoundError = class(TTMDBAPIError);
   TTMDBAPIIncorrectIMDbIDError = class(TTMDBAPIError);
+  TTMDBAPIConfigurationError = class(TTMDBAPIError);
 
   TTMDBAPICountriesError = class(TTMDBCollectionError);
   TTMDBAPIJobsError = class(TTMDBCollectionError);
@@ -98,6 +99,47 @@ type
 
   TTMDBTimeZones = class(TCollectionJSONResponse);
 
+  { TTMDBConfiguration }
+
+  { TTMDBConfigurationImages }
+
+  TTMDBConfigurationImages = class
+    private
+      fBackdrop_Sizes: TStrings;
+      FBase_URL: string;
+      fLogo_Sizes: TStrings;
+      fPoster_Sizes: TStrings;
+      fProfile_Sizes: TStrings;
+      FSecure_Base_URL: string;
+      fStill_Sizes: TStrings;
+      procedure SetBase_URL(AValue: string);
+      procedure SetSecure_Base_URL(AValue: string);
+    public
+      constructor Create;
+      destructor Destroy; override;
+    published
+      property Base_URL: string read FBase_URL write SetBase_URL;
+      property Secure_Base_URL: string read FSecure_Base_URL write SetSecure_Base_URL;
+      property Backdrop_Sizes: TStrings read fBackdrop_Sizes;
+      property Logo_Sizes: TStrings read fLogo_Sizes;
+      property Poster_Sizes: TStrings read fPoster_Sizes;
+      property Profile_Sizes: TStrings read fProfile_Sizes;
+      property Still_Sizes: TStrings read fStill_Sizes;
+  end;
+
+
+  TTMDBConfiguration = class(TCustomJSONResponse)
+    private
+      fChange_Keys: TStrings;
+      fImages: TTMDBConfigurationImages;
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property Images: TTMDBConfigurationImages read fImages;
+      property Change_Keys: TStrings read fChange_Keys;
+  end;
+
   { TTMDB }
 
   TTMDB = class
@@ -116,6 +158,7 @@ type
       function GetRequest(const aParams: string): string;
       function ProcessRequest(aJSON: string): TCustomJSONResponse;
       function GetResponse(aParams: string): TCustomJSONResponse;
+      function ConfigurationParam: string;
       function CountriesParam: string;
       function JobsParam: string;
       function LanguagesParam: string;
@@ -131,6 +174,7 @@ type
       function GetJobs: TCollectionJSONResponse;
       function GetLanguages: TCollectionJSONResponse;
       function GetTimeZones: TCollectionJSONResponse;
+      function GetConfiguration: TCustomJSONResponse;
     end;
 
 implementation
@@ -140,6 +184,56 @@ uses fphttpclient, Dialogs;
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBConfigurationImages }
+
+procedure TTMDBConfigurationImages.SetSecure_Base_URL(AValue: string);
+begin
+  if FSecure_Base_URL=AValue then Exit;
+  FSecure_Base_URL:=AValue;
+end;
+
+procedure TTMDBConfigurationImages.SetBase_URL(AValue: string);
+begin
+  if FBase_URL=AValue then Exit;
+  FBase_URL:=AValue;
+end;
+
+constructor TTMDBConfigurationImages.Create;
+begin
+  inherited Create;
+  fBackdrop_Sizes:= TStringList.Create;
+  fLogo_Sizes:= TStringList.Create;
+  fPoster_Sizes:= TStringList.Create;
+  fProfile_Sizes:= TStringList.Create;
+  fStill_Sizes:= TStringList.Create;
+end;
+
+destructor TTMDBConfigurationImages.Destroy;
+begin
+  fBackdrop_Sizes.Free;
+  fLogo_Sizes.Free;
+  fPoster_Sizes.Free;
+  fProfile_Sizes.Free;
+  fStill_Sizes.Free;
+  inherited Destroy;
+end;
+
+{ TTMDBConfiguration }
+
+constructor TTMDBConfiguration.Create(aJSON: string);
+begin
+  fChange_Keys:= TStringList.Create;
+  fImages:= TTMDBConfigurationImages.Create;
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBConfiguration.Destroy;
+begin
+  Images.Free;
+  fChange_Keys.Free;
+  inherited Destroy;
+end;
 
 { TTMDBTimeZoneItem }
 
@@ -254,6 +348,23 @@ procedure TTMDB.SetVersion(AValue: TTMDBAPIVersion);
 begin
   if fVersion=AValue then Exit;
   fVersion:=AValue;
+end;
+
+function TTMDB.GetConfiguration: TCustomJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= GetRequest(ConfigurationParam);
+    Result:= TTMDBConfiguration.Create(aRequest);
+  except
+    Result:= TTMDBAPIConfigurationError.Create;
+  end;
+end;
+
+function TTMDB.ConfigurationParam: string;
+begin
+  Result:= 'configuration';
 end;
 
 function TTMDB.GetCountries: TCollectionJSONResponse;
@@ -419,6 +530,7 @@ begin
   aRequest:= GetRequest(aParams);
   Result:= ProcessRequest(aRequest);
 end;
+
 
 
 end.
