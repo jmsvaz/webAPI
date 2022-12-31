@@ -3,6 +3,7 @@ object fmWebQuery: TfmWebQuery
   Height = 556
   Top = 196
   Width = 864
+  ActiveControl = btSearch
   Caption = 'Web Query'
   ClientHeight = 556
   ClientWidth = 864

@@ -42,6 +42,23 @@ type
 
   TTMDBCountries = class(TCollectionJSONResponse);
 
+  { TTMDBJobItem }
+
+  TTMDBJobItem = class(TCollectionitem)
+    private
+      FDepartment: string;
+      fJobs: TStrings;
+    procedure SetDepartment(AValue: string);
+    public
+      constructor Create(ACollection: TCollection); override;
+      destructor Destroy; override;
+    published
+      property Department: string read FDepartment write SetDepartment;
+      property Jobs: TStrings read fJobs;
+  end;
+
+  TTMDBJobs = class(TCollectionJSONResponse);
+
   { TTMDB }
 
   TTMDB = class
@@ -61,6 +78,7 @@ type
       function ProcessRequest(aJSON: string): TCustomJSONResponse;
       function GetResponse(aParams: string): TCustomJSONResponse;
       function CountriesParam: string;
+      function JobsParam: string;
     public
       constructor Create(aAPIKey: string = '');
       property TimeOut: Integer read fTimeOut write SetTimeOut;
@@ -69,15 +87,35 @@ type
       property Caption: string read aCaption;
       property Language: string read FLanguage write SetLanguage;
       function GetCountries: TCollectionJSONResponse;
+      function GetJobs: TCollectionJSONResponse;
     end;
 
 implementation
 
-uses fphttpclient{, Dialogs};
+uses fphttpclient, Dialogs;
 
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBJobItem }
+
+procedure TTMDBJobItem.SetDepartment(AValue: string);
+begin
+  if FDepartment=AValue then Exit;
+  FDepartment:=AValue;
+end;
+
+constructor TTMDBJobItem.Create(ACollection: TCollection);
+begin
+  inherited Create(ACollection);
+  fJobs:= TStringList.Create;
+end;
+
+destructor TTMDBJobItem.Destroy;
+begin
+  Jobs.Free;
+end;
 
 { TTMDBCountryItem }
 
@@ -110,36 +148,10 @@ begin
   aCaption:= 'The Movie DB';
 end;  
 
-function TTMDB.CountriesParam: string;
-begin
-  Result:= 'configuration/countries';
-end;
-
-function TTMDB.GetCountries: TCollectionJSONResponse;
-var
-  aRequest: string;
-begin
-  try
-    aRequest:= GetRequest(CountriesParam);
-    Result:= TTMDBCountries.Create(TTMDBCountryItem, aRequest);
-  except
-    //Result:= TTMDBAPICountriesError.Create('');
-  end;
-end;
-
 procedure TTMDB.SetAPIKey(AValue: string);
 begin
   if fAPIKey=AValue then Exit;
   fAPIKey:=AValue;
-end;
-
-function TTMDB.GetRequest(const aParams: string): string;
-var
-  completeURL: string;
-begin
-  completeURL:= RequestURL(aParams);
-//  Showmessage(completeURL);
-  Result:= DoRequest(completeURL);
 end;
 
 procedure TTMDB.SetLanguage(AValue: string);
@@ -160,9 +172,52 @@ begin
   fVersion:=AValue;
 end;
 
+function TTMDB.GetCountries: TCollectionJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= GetRequest(CountriesParam);
+    Result:= TTMDBCountries.Create(TTMDBCountryItem, aRequest);
+  except
+    //Result:= TTMDBAPICountriesError.Create('');
+  end;
+end;
+
+function TTMDB.CountriesParam: string;
+begin
+  Result:= 'configuration/countries';
+end;
+
+function TTMDB.GetJobs: TCollectionJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= GetRequest(JobsParam);
+    Result:= TTMDBJobs.Create(TTMDBJobItem, aRequest);
+  except
+    //Result:= TTMDBAPIJobsError.Create('');
+  end;
+end;
+
+function TTMDB.JobsParam: string;
+begin
+  Result:= 'configuration/jobs';
+end;
+
+function TTMDB.GetRequest(const aParams: string): string;
+var
+  completeURL: string;
+begin
+  completeURL:= RequestURL(aParams);
+  Showmessage(completeURL);
+  Result:= DoRequest(completeURL);
+end;
+
 function TTMDB.RequestURL(aParams: string): string;
 begin
-  //https://api.themoviedb.org/3/configuration/countries?api_key=<<api_key>>
+  //https://api.themoviedb.org/3/configuration/countries?api_key=<<api_key>>&language=en-US
   //https://api.themoviedb.org/3/movie/{movie_id}?api_key=<<api_key>>&language=en-US
 
   Result:= TMDBBASEURL + TMDBVersionString[Version] + '/' + aParams + '?api_key='

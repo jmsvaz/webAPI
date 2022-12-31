@@ -84,6 +84,7 @@ begin
   if cbSearchAPI.Items[cbSearchAPI.ItemIndex] = aTMDBAPI.Caption then
     begin
       cbSearchMethod.Items.Add('Countries');
+       cbSearchMethod.Items.Add('Jobs');
 
       cbSearchMethod.ItemIndex:= 0;
     end;
@@ -94,6 +95,7 @@ Var
   aResult: TPersistent;
 begin
   mmResult.Clear;
+  aResult:= nil;
   try
     if cbSearchAPI.Items[cbSearchAPI.ItemIndex] = aOMDBAPI.Caption then
       begin
@@ -146,20 +148,25 @@ begin
       begin
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Countries' then
           aResult:= aTMDBAPI.GetCountries;
-
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Jobs' then
+          aResult:= aTMDBAPI.GetJobs;
       end;
     if Assigned(aResult) then
-      if aResult is TCustomJSONResponse then
-        mmResult.Append(TCustomJSONResponse(aResult).FormatJSON);
-    if aResult is TCollectionJSONResponse then
-      mmResult.Append(TCollectionJSONResponse(aResult).FormatJSON);
+      begin
+        if aResult is TCustomJSONResponse then
+          mmResult.Append(TCustomJSONResponse(aResult).FormatJSON);
+        if aResult is TCollectionJSONResponse then
+          mmResult.Append(TCollectionJSONResponse(aResult).FormatJSON);
+      end;
   except
     on e: Exception do
       begin
         ShowMessage('Exception : ' + e.Message);
       end;
   end;
-   aResult.Free;
+// TODO: find out why freeing aResult is generating a SIGSEV if aResult is get from aTMDBAPI.GetJobs, but not if is get from aTMDBAPI.GetCountries
+//   if Assigned(aResult) then
+//       FreeAndNil(aResult);
 end;
 
 
