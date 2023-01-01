@@ -20,6 +20,8 @@ type
   TTMDBAPIMovieNotFoundError = class(TTMDBAPIError);
   TTMDBAPIIncorrectIMDbIDError = class(TTMDBAPIError);
   TTMDBAPIConfigurationError = class(TTMDBAPIError);
+  TTMDBGenreListError = class(TTMDBAPIError);
+
 
   TTMDBAPICountriesError = class(TTMDBCollectionError);
   TTMDBAPIJobsError = class(TTMDBCollectionError);
@@ -144,6 +146,31 @@ type
 
   TTMDBPrimaryTranslations = class(TStringsJSONResponse);
 
+  { TTMDBGenreItem }
+
+  TTMDBGenreItem =  class(TCollectionitem)
+    private
+      FId: Integer;
+      FName: string;
+      procedure SetId(AValue: Integer);
+      procedure SetName(AValue: string);
+    published
+      property Id: Integer read FId write SetId;
+      property Name: string read FName write SetName;
+  end;
+
+  { TTMDBGenreList }
+
+  TTMDBGenreList = class(TCustomJSONResponse)
+    private
+      fGenres: TCollection;
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property Genres: TCollection read fGenres;
+  end;
+
   { TTMDB }
 
   TTMDB = class
@@ -155,9 +182,11 @@ type
       fJobs: TTMDBJobs;
       FLanguage: string;
       fLanguages: TTMDBLanguages;
+      fMovieGenres: TTMDBGenreList;
       fPrimaryTranslations: TTMDBPrimaryTranslations;
       fTimeOut: Integer;
       fTimeZones: TTMDBTimeZones;
+      fTVGenres: TTMDBGenreList;
       fVersion: TTMDBAPIVersion;
       procedure SetAPIKey(AValue: string);
       procedure SetLanguage(AValue: string);
@@ -174,14 +203,19 @@ type
       function LanguagesParam: string;
       function TimeZonesParam: string;
       function PrimaryTranslationsParams: string;
+      function MovieGenresParam: string;
+      function TVGenresParam: string;
       function GetCountries: TCollectionJSONResponse;
       function GetJobs: TCollectionJSONResponse; 
       function GetLanguages: TCollectionJSONResponse;
       function GetTimeZones: TCollectionJSONResponse;
       function GetConfiguration: TCustomJSONResponse; 
       function GetPrimaryTranslations: TStringsJSONResponse;
+      function GetMovieGenres: TCustomJSONResponse;
+      function GetTVGenres: TCustomJSONResponse;
     public
       constructor Create(aAPIKey: string = '');
+      function UpdateConfiguration: boolean;
       property TimeOut: Integer read fTimeOut write SetTimeOut;
       property APIKey: string read fAPIKey write SetAPIKey;
       property Version: TTMDBAPIVersion read fVersion write SetVersion;
@@ -193,7 +227,8 @@ type
       property TimeZones: TTMDBTimeZones read fTimeZones;
       property Configuration: TTMDBConfiguration read fConfiguration;
       property PrimaryTranslations: TTMDBPrimaryTranslations read fPrimaryTranslations;
-      function UpdateConfiguration: boolean;
+      property MovieGenres: TTMDBGenreList read fMovieGenres;
+      property TVGenres: TTMDBGenreList read fTVGenres;
     end;
 
 implementation
@@ -203,6 +238,35 @@ uses fphttpclient, Dialogs;
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBGenreList }
+
+constructor TTMDBGenreList.Create(aJSON: string);
+begin
+  fGenres:= TCollection.Create(TTMDBGenreItem);
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBGenreList.Destroy;
+begin
+  fGenres.Free;
+  inherited Destroy;
+end;
+
+
+{ TTMDBGenreItem }
+
+procedure TTMDBGenreItem.SetId(AValue: Integer);
+begin
+  if FId=AValue then Exit;
+  FId:=AValue;
+end;
+
+procedure TTMDBGenreItem.SetName(AValue: string);
+begin
+  if FName=AValue then Exit;
+  FName:=AValue;
+end;
 
 { TTMDBConfigurationImages }
 
@@ -380,6 +444,9 @@ begin
     fTimeZones:= TTMDBTimeZones(GetTimeZones);
     fConfiguration:= TTMDBConfiguration(GetConfiguration);
     fPrimaryTranslations:= TTMDBPrimaryTranslations(GetPrimaryTranslations);
+    fMovieGenres:= TTMDBGenreList(GetMovieGenres);
+    fTVGenres:= TTMDBGenreList(GetTVGenres);
+
     Result:= True;
   finally
   end;
@@ -485,6 +552,40 @@ end;
 function TTMDB.PrimaryTranslationsParams: string;
 begin
   Result:= 'configuration/primary_translations';
+end;
+
+function TTMDB.GetMovieGenres: TCustomJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= GetRequest(MovieGenresParam);
+    Result:= TTMDBGenreList.Create(aRequest);
+  except
+    Result:= TTMDBGenreListError.Create;
+  end;
+end;
+
+function TTMDB.MovieGenresParam: string;
+begin
+  Result:= 'genre/movie/list';
+end;
+
+function TTMDB.GetTVGenres: TCustomJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= GetRequest(TVGenresParam);
+    Result:= TTMDBGenreList.Create(aRequest);
+  except
+    Result:= TTMDBGenreListError.Create;
+  end;
+end;
+
+function TTMDB.TVGenresParam: string;
+begin
+  Result:= 'genre/tv/list';
 end;
 
 function TTMDB.GetRequest(const aParams: string): string;

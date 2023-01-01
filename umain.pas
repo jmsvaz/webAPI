@@ -89,6 +89,8 @@ begin
       cbSearchMethod.Items.Add('Languages');
       cbSearchMethod.Items.Add('Time Zones');
       cbSearchMethod.Items.Add('Primary Translations');
+      cbSearchMethod.Items.Add('Movie Genres');
+      cbSearchMethod.Items.Add('TV Genres');
 
       cbSearchMethod.ItemIndex:= 0;
     end;
@@ -161,7 +163,12 @@ begin
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Time Zones' then
           aResult:= aTMDBAPI.TimeZones;
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Primary Translations' then
-          aResult:= aTMDBAPI.PrimaryTranslations
+          aResult:= aTMDBAPI.PrimaryTranslations;
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Movie Genres' then
+          aResult:= aTMDBAPI.MovieGenres;
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'TV Genres' then
+          aResult:= aTMDBAPI.TVGenres;
+
 
       end;
     if Assigned(aResult) then
