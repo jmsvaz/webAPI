@@ -192,7 +192,6 @@ type
       procedure SetLanguage(AValue: string);
       procedure SetTimeOut(AValue: Integer);
       procedure SetVersion(AValue: TTMDBAPIVersion);
-      function RequestURL(aParams: string): string;
       function DoRequest(aURL: string): string;
       function ConfigurationURL: string;
       function CountriesURL: string;
@@ -591,15 +590,6 @@ function TTMDB.TVGenresURL: string;
 begin
   Result:= TMDBBASEURL + TMDBVersionString[Version] + '/genre/tv/list' +
            '?api_key=' + APIKey + '&language=' + Language;
-end;
-
-function TTMDB.RequestURL(aParams: string): string;
-begin
-  //https://api.themoviedb.org/3/configuration/countries?api_key=<<api_key>>&language=en-US
-  //https://api.themoviedb.org/3/movie/{movie_id}?api_key=<<api_key>>&language=en-US
-
-  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/' + aParams + '?api_key='
-           + APIKey + '&language=' + Language;
 end;
 
 function TTMDB.DoRequest(aURL: string): string;
