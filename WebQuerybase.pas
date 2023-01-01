@@ -39,6 +39,20 @@ type
       property JSON: string read GetJSON write SetJSON;
     end;
 
+  { TStringsJSONResponse }
+
+  TStringsJSONResponse = class(TStringList)
+    private
+      fJSONData: TJSONData;
+      function GetJSON: string;
+      procedure SetJSON(AValue: string);
+      procedure DeStream;
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+      function FormatJSON: string;
+      property JSON: string read GetJSON write SetJSON;
+    end;
 
   { TCustomJSONError }
 
@@ -53,6 +67,18 @@ type
   { TCollectionJSONError }
 
   TCollectionJSONError = class(TCollectionJSONResponse)
+    private
+      fError: string;
+      procedure SetError(AValue: string);
+    published
+      property Error: string read fError write SetError;
+  end;
+
+  { TCollectionJSONError }
+
+  { TStringsJSONError }
+
+  TStringsJSONError = class(TStringsJSONResponse)
     private
       fError: string;
       procedure SetError(AValue: string);
@@ -79,6 +105,56 @@ begin
   end;
 end;
 
+{ TStringsJSONResponse }
+
+function TStringsJSONResponse.GetJSON: string;
+begin
+  if Assigned(fJSONData) then
+    Result:= fJSONData.AsJSON;
+end;
+
+procedure TStringsJSONResponse.SetJSON(AValue: string);
+begin
+  if Assigned(fJSONData) then
+    FreeAndNil(fJSONData);
+  if AValue <> EmptyStr then
+    begin
+      fJSONData:= fpJSON.GetJSON(AValue);
+      DeStream;
+    end;
+end;
+
+procedure TStringsJSONResponse.DeStream;
+var
+  DeStreamer: TJSONDeStreamer;
+begin
+  DeStreamer := TJSONDeStreamer.Create(nil);
+  try
+    DeStreamer.JSONToObject(JSON,self);
+  finally
+    DeStreamer.Free;
+  end;
+end;
+
+constructor TStringsJSONResponse.Create(aJSON: string);
+begin
+  JSON:= aJSON;
+  inherited Create;
+end;
+
+destructor TStringsJSONResponse.Destroy;
+begin
+  if Assigned(fJSONData) then
+    FreeAndNil(fJSONData);
+  inherited Destroy;
+end;
+
+function TStringsJSONResponse.FormatJSON: string;
+begin
+  if Assigned(fJSONData) then
+    Result:= fJSONData.FormatJSON();
+end;
+
 { TCollectionJSONError }
 
 procedure TCollectionJSONError.SetError(AValue: string);
@@ -87,7 +163,13 @@ begin
   fError:=AValue;
 end;
 
+{ TStringsJSONError }
 
+procedure TStringsJSONError.SetError(AValue: string);
+begin
+  if fError=AValue then Exit;
+  fError:=AValue;
+end;
 
 { TCustomJSONError }
 

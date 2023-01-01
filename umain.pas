@@ -88,6 +88,7 @@ begin
       cbSearchMethod.Items.Add('Jobs');
       cbSearchMethod.Items.Add('Languages');
       cbSearchMethod.Items.Add('Time Zones');
+      cbSearchMethod.Items.Add('Primary Translations');
 
       cbSearchMethod.ItemIndex:= 0;
     end;
@@ -159,6 +160,9 @@ begin
           aResult:= aTMDBAPI.GetLanguages;
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Time Zones' then
           aResult:= aTMDBAPI.GetTimeZones;
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Primary Translations' then
+          aResult:= aTMDBAPI.GetPrimaryTranslations
+
       end;
     if Assigned(aResult) then
       begin
@@ -166,6 +170,8 @@ begin
           mmResult.Append(TCustomJSONResponse(aResult).FormatJSON);
         if aResult is TCollectionJSONResponse then
           mmResult.Append(TCollectionJSONResponse(aResult).FormatJSON);
+        if aResult is TStringsJSONResponse then
+          mmResult.Append(TStringsJSONResponse(aResult).FormatJSON);
       end;
   except
     on e: Exception do

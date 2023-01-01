@@ -25,6 +25,8 @@ type
   TTMDBAPIJobsError = class(TTMDBCollectionError);
   TTMDBAPILanguagesError = class(TTMDBCollectionError);
   TTMDBAPITimeZonesError = class(TTMDBCollectionError);
+  TTMDBAPIPrimaryTranslationsError = class(TStringsJSONError);
+
 
   { TTMDBCountryItem }
 
@@ -99,8 +101,6 @@ type
 
   TTMDBTimeZones = class(TCollectionJSONResponse);
 
-  { TTMDBConfiguration }
-
   { TTMDBConfigurationImages }
 
   TTMDBConfigurationImages = class
@@ -127,6 +127,7 @@ type
       property Still_Sizes: TStrings read fStill_Sizes;
   end;
 
+  { TTMDBConfiguration }
 
   TTMDBConfiguration = class(TCustomJSONResponse)
     private
@@ -139,6 +140,9 @@ type
       property Images: TTMDBConfigurationImages read fImages;
       property Change_Keys: TStrings read fChange_Keys;
   end;
+
+
+  TTMDBPrimaryTranslations = class(TStringsJSONResponse);
 
   { TTMDB }
 
@@ -163,6 +167,7 @@ type
       function JobsParam: string;
       function LanguagesParam: string;
       function TimeZonesParam: string;
+      function PrimaryTranslationsParams: string;
     public
       constructor Create(aAPIKey: string = '');
       property TimeOut: Integer read fTimeOut write SetTimeOut;
@@ -175,6 +180,7 @@ type
       function GetLanguages: TCollectionJSONResponse;
       function GetTimeZones: TCollectionJSONResponse;
       function GetConfiguration: TCustomJSONResponse;
+      function GetPrimaryTranslations: TStringsJSONResponse;
     end;
 
 implementation
@@ -433,6 +439,23 @@ end;
 function TTMDB.TimeZonesParam: string;
 begin
   Result:= 'configuration/timezones';
+end;
+
+function TTMDB.GetPrimaryTranslations: TStringsJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= GetRequest(PrimaryTranslationsParams);
+    Result:= TTMDBPrimaryTranslations.Create(aRequest);
+  except
+    Result:= TTMDBAPIPrimaryTranslationsError.Create;
+  end;
+end;
+
+function TTMDB.PrimaryTranslationsParams: string;
+begin
+  Result:= 'configuration/primary_translations';
 end;
 
 function TTMDB.GetRequest(const aParams: string): string;
