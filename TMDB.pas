@@ -194,9 +194,6 @@ type
       procedure SetVersion(AValue: TTMDBAPIVersion);
       function RequestURL(aParams: string): string;
       function DoRequest(aURL: string): string;
-      function GetRequest(const aParams: string): string;
-      function ProcessRequest(aJSON: string): TCustomJSONResponse;
-      function GetResponse(aParams: string): TCustomJSONResponse;
       function ConfigurationURL: string;
       function CountriesURL: string;
       function JobsURL: string;
@@ -436,7 +433,6 @@ end;
 
 function TTMDB.UpdateConfiguration: boolean;
 begin
-  Result:= False;
   try
     fCountries:= TTMDBCountries(GetCountries);
     fJobs:= TTMDBJobs(GetJobs);
@@ -448,7 +444,8 @@ begin
     fTVGenres:= TTMDBGenreList(GetTVGenres);
 
     Result:= True;
-  finally
+  except
+    Result:= False;
   end;
 end;
 
@@ -596,15 +593,6 @@ begin
            '?api_key=' + APIKey + '&language=' + Language;
 end;
 
-function TTMDB.GetRequest(const aParams: string): string;
-var
-  completeURL: string;
-begin
-  completeURL:= RequestURL(aParams);
-  Showmessage(completeURL);
-  Result:= DoRequest(completeURL);
-end;
-
 function TTMDB.RequestURL(aParams: string): string;
 begin
   //https://api.themoviedb.org/3/configuration/countries?api_key=<<api_key>>&language=en-US
@@ -631,66 +619,6 @@ begin
   Result:= aResult;
 end;
 
-function TTMDB.ProcessRequest(aJSON: string): TCustomJSONResponse;
-var
-  json: TJSONObject;
-begin
-  Result:= nil;
-
-  try
-    json:= TJSONObject(GetJSON(aJSON));
-
-    if json.FindPath('Response').AsString = 'False' then
-      begin
-        if json.FindPath('Error').AsString = 'Movie not found!' then
-          Result:= TTMDBAPIMovieNotFoundError.Create(aJSON)
-        else
-          if json.FindPath('Error').AsString = 'Incorrect IMDb ID.' then
-            Result:= TTMDBAPIIncorrectIMDbIDError.Create(aJSON)
-          else
-            Result:= TTMDBAPIError.Create(aJSON);
-      end
-    else
-      begin
-{        if json.FindPath('Response').AsString = 'True' then
-          try
-            data:= json.FindPath('Type');
-            if Assigned(data) then
-              begin
-                if data.AsString = 'movie' then
-                  Result:= TOMDBMovie.Create(aJSON);
-                if data.AsString = 'series' then
-                  Result:= TOMDBSeries.Create(aJSON);
-                if data.AsString = 'episode' then
-                  Result:= TOMDBEpisode.Create(aJSON);
-                if data.AsString = 'game' then
-                  Result:= TOMDBGame.Create(aJSON);
-              end
-            else
-            begin
-             data:= json.FindPath('Search');
-            if Assigned(data) then
-              Result:= TTMDBSearch.Create(aJSON);
-
-            end;
-
-          except
-            Result:= TTMDBAPIError.Create(aJSON);
-          end;}
-      end;
-  except
-    Result:= TTMDBAPIError.Create;
-  end;
-
-end;
-
-function TTMDB.GetResponse(aParams: string): TCustomJSONResponse;
-var
-  aRequest: string;
-begin
-  aRequest:= GetRequest(aParams);
-  Result:= ProcessRequest(aRequest);
-end;
 
 
 
