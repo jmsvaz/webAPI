@@ -151,17 +151,17 @@ begin
     if cbSearchAPI.Items[cbSearchAPI.ItemIndex] = aTMDBAPI.Caption then
       begin
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Configuration' then
-          aResult:= aTMDBAPI.GetConfiguration;
+          aResult:= aTMDBAPI.Configuration;
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Countries' then
-          aResult:= aTMDBAPI.GetCountries;
+          aResult:= aTMDBAPI.Countries;
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Jobs' then
-          aResult:= aTMDBAPI.GetJobs;
+          aResult:= aTMDBAPI.Jobs;
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Languages' then
-          aResult:= aTMDBAPI.GetLanguages;
+          aResult:= aTMDBAPI.Languages;
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Time Zones' then
-          aResult:= aTMDBAPI.GetTimeZones;
+          aResult:= aTMDBAPI.TimeZones;
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Primary Translations' then
-          aResult:= aTMDBAPI.GetPrimaryTranslations
+          aResult:= aTMDBAPI.PrimaryTranslations
 
       end;
     if Assigned(aResult) then

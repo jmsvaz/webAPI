@@ -150,8 +150,14 @@ type
     private
       aCaption: string;
       fAPIKey: string;
+      fConfiguration: TTMDBConfiguration;
+      fCountries: TTMDBCountries;
+      fJobs: TTMDBJobs;
       FLanguage: string;
+      fLanguages: TTMDBLanguages;
+      fPrimaryTranslations: TTMDBPrimaryTranslations;
       fTimeOut: Integer;
+      fTimeZones: TTMDBTimeZones;
       fVersion: TTMDBAPIVersion;
       procedure SetAPIKey(AValue: string);
       procedure SetLanguage(AValue: string);
@@ -168,6 +174,12 @@ type
       function LanguagesParam: string;
       function TimeZonesParam: string;
       function PrimaryTranslationsParams: string;
+      function GetCountries: TCollectionJSONResponse;
+      function GetJobs: TCollectionJSONResponse; 
+      function GetLanguages: TCollectionJSONResponse;
+      function GetTimeZones: TCollectionJSONResponse;
+      function GetConfiguration: TCustomJSONResponse; 
+      function GetPrimaryTranslations: TStringsJSONResponse;
     public
       constructor Create(aAPIKey: string = '');
       property TimeOut: Integer read fTimeOut write SetTimeOut;
@@ -175,12 +187,13 @@ type
       property Version: TTMDBAPIVersion read fVersion write SetVersion;
       property Caption: string read aCaption;
       property Language: string read FLanguage write SetLanguage;
-      function GetCountries: TCollectionJSONResponse;
-      function GetJobs: TCollectionJSONResponse;
-      function GetLanguages: TCollectionJSONResponse;
-      function GetTimeZones: TCollectionJSONResponse;
-      function GetConfiguration: TCustomJSONResponse;
-      function GetPrimaryTranslations: TStringsJSONResponse;
+      property Countries: TTMDBCountries read fCountries;
+      property Jobs: TTMDBJobs read fJobs;
+      property Languages: TTMDBLanguages read fLanguages;
+      property TimeZones: TTMDBTimeZones read fTimeZones;
+      property Configuration: TTMDBConfiguration read fConfiguration;
+      property PrimaryTranslations: TTMDBPrimaryTranslations read fPrimaryTranslations;
+      function UpdateConfiguration: boolean;
     end;
 
 implementation
@@ -332,12 +345,6 @@ begin
   aCaption:= 'The Movie DB';
 end;  
 
-procedure TTMDB.SetAPIKey(AValue: string);
-begin
-  if fAPIKey=AValue then Exit;
-  fAPIKey:=AValue;
-end;
-
 procedure TTMDB.SetLanguage(AValue: string);
 begin
   if FLanguage=AValue then Exit;
@@ -354,6 +361,28 @@ procedure TTMDB.SetVersion(AValue: TTMDBAPIVersion);
 begin
   if fVersion=AValue then Exit;
   fVersion:=AValue;
+end;
+
+procedure TTMDB.SetAPIKey(AValue: string);
+begin
+  if fAPIKey=AValue then Exit;
+  fAPIKey:=AValue;
+  UpdateConfiguration;
+end;
+
+function TTMDB.UpdateConfiguration: boolean;
+begin
+  Result:= False;
+  try
+    fCountries:= TTMDBCountries(GetCountries);
+    fJobs:= TTMDBJobs(GetJobs);
+    fLanguages:= TTMDBLanguages(GetLanguages);
+    fTimeZones:= TTMDBTimeZones(GetTimeZones);
+    fConfiguration:= TTMDBConfiguration(GetConfiguration);
+    fPrimaryTranslations:= TTMDBPrimaryTranslations(GetPrimaryTranslations);
+    Result:= True;
+  finally
+  end;
 end;
 
 function TTMDB.GetConfiguration: TCustomJSONResponse;
