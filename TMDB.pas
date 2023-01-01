@@ -197,14 +197,14 @@ type
       function GetRequest(const aParams: string): string;
       function ProcessRequest(aJSON: string): TCustomJSONResponse;
       function GetResponse(aParams: string): TCustomJSONResponse;
-      function ConfigurationParam: string;
-      function CountriesParam: string;
-      function JobsParam: string;
-      function LanguagesParam: string;
-      function TimeZonesParam: string;
-      function PrimaryTranslationsParams: string;
-      function MovieGenresParam: string;
-      function TVGenresParam: string;
+      function ConfigurationURL: string;
+      function CountriesURL: string;
+      function JobsURL: string;
+      function LanguagesURL: string;
+      function TimeZonesURL: string;
+      function PrimaryTranslationsURL: string;
+      function MovieGenresURL: string;
+      function TVGenresURL: string;
       function GetCountries: TCollectionJSONResponse;
       function GetJobs: TCollectionJSONResponse; 
       function GetLanguages: TCollectionJSONResponse;
@@ -457,16 +457,17 @@ var
   aRequest: string;
 begin
   try
-    aRequest:= GetRequest(ConfigurationParam);
+    aRequest:= DoRequest(ConfigurationURL);
     Result:= TTMDBConfiguration.Create(aRequest);
   except
     Result:= TTMDBAPIConfigurationError.Create;
   end;
 end;
 
-function TTMDB.ConfigurationParam: string;
+function TTMDB.ConfigurationURL: string;
 begin
-  Result:= 'configuration';
+  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/configuration' +
+           '?api_key=' + APIKey + '&language=' + Language;
 end;
 
 function TTMDB.GetCountries: TCollectionJSONResponse;
@@ -474,16 +475,17 @@ var
   aRequest: string;
 begin
   try
-    aRequest:= GetRequest(CountriesParam);
+    aRequest:= DoRequest(CountriesURL);
     Result:= TTMDBCountries.Create(TTMDBCountryItem, aRequest);
   except
     Result:= TTMDBAPICountriesError.Create(TTMDBCountryItem);
   end;
 end;
 
-function TTMDB.CountriesParam: string;
+function TTMDB.CountriesURL: string;
 begin
-  Result:= 'configuration/countries';
+  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/configuration/countries' +
+           '?api_key=' + APIKey + '&language=' + Language;
 end;
 
 function TTMDB.GetJobs: TCollectionJSONResponse;
@@ -491,16 +493,17 @@ var
   aRequest: string;
 begin
   try
-    aRequest:= GetRequest(JobsParam);
+    aRequest:= DoRequest(JobsURL);
     Result:= TTMDBJobs.Create(TTMDBJobItem, aRequest);
   except
     Result:= TTMDBAPIJobsError.Create(TTMDBJobItem);
   end;
 end;
 
-function TTMDB.JobsParam: string;
+function TTMDB.JobsURL: string;
 begin
-  Result:= 'configuration/jobs';
+  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/configuration/jobs' +
+           '?api_key=' + APIKey + '&language=' + Language;
 end;
 
 function TTMDB.GetLanguages: TCollectionJSONResponse;
@@ -508,16 +511,17 @@ var
   aRequest: string;
 begin
   try
-    aRequest:= GetRequest(LanguagesParam);
+    aRequest:= DoRequest(LanguagesURL);
     Result:= TTMDBLanguages.Create(TTMDBLanguageItem, aRequest);
   except
     Result:= TTMDBAPILanguagesError.Create(TTMDBLanguageItem);
   end;
 end;
 
-function TTMDB.LanguagesParam: string;
+function TTMDB.LanguagesURL: string;
 begin
-  Result:= 'configuration/languages';
+  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/configuration/languages' +
+           '?api_key=' + APIKey + '&language=' + Language;
 end;
 
 function TTMDB.GetTimeZones: TCollectionJSONResponse;
@@ -525,16 +529,17 @@ var
   aRequest: string;
 begin
   try
-    aRequest:= GetRequest(TimeZonesParam);
+    aRequest:= DoRequest(TimeZonesURL);
     Result:= TTMDBTimeZones.Create(TTMDBTimeZoneItem, aRequest);
   except
     Result:= TTMDBAPITimeZonesError.Create(TTMDBLanguageItem);
   end;
 end;
 
-function TTMDB.TimeZonesParam: string;
+function TTMDB.TimeZonesURL: string;
 begin
-  Result:= 'configuration/timezones';
+  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/configuration/timezones' +
+           '?api_key=' + APIKey + '&language=' + Language;
 end;
 
 function TTMDB.GetPrimaryTranslations: TStringsJSONResponse;
@@ -542,16 +547,17 @@ var
   aRequest: string;
 begin
   try
-    aRequest:= GetRequest(PrimaryTranslationsParams);
+    aRequest:= DoRequest(PrimaryTranslationsURL);
     Result:= TTMDBPrimaryTranslations.Create(aRequest);
   except
     Result:= TTMDBAPIPrimaryTranslationsError.Create;
   end;
 end;
 
-function TTMDB.PrimaryTranslationsParams: string;
+function TTMDB.PrimaryTranslationsURL: string;
 begin
-  Result:= 'configuration/primary_translations';
+  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/configuration/primary_translations' +
+           '?api_key=' + APIKey + '&language=' + Language;
 end;
 
 function TTMDB.GetMovieGenres: TCustomJSONResponse;
@@ -559,16 +565,17 @@ var
   aRequest: string;
 begin
   try
-    aRequest:= GetRequest(MovieGenresParam);
+    aRequest:= DoRequest(MovieGenresURL);
     Result:= TTMDBGenreList.Create(aRequest);
   except
     Result:= TTMDBGenreListError.Create;
   end;
 end;
 
-function TTMDB.MovieGenresParam: string;
+function TTMDB.MovieGenresURL: string;
 begin
-  Result:= 'genre/movie/list';
+  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/genre/movie/list' +
+           '?api_key=' + APIKey + '&language=' + Language;
 end;
 
 function TTMDB.GetTVGenres: TCustomJSONResponse;
@@ -576,16 +583,17 @@ var
   aRequest: string;
 begin
   try
-    aRequest:= GetRequest(TVGenresParam);
+    aRequest:= DoRequest(TVGenresURL);
     Result:= TTMDBGenreList.Create(aRequest);
   except
     Result:= TTMDBGenreListError.Create;
   end;
 end;
 
-function TTMDB.TVGenresParam: string;
+function TTMDB.TVGenresURL: string;
 begin
-  Result:= 'genre/tv/list';
+  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/genre/tv/list' +
+           '?api_key=' + APIKey + '&language=' + Language;
 end;
 
 function TTMDB.GetRequest(const aParams: string): string;
