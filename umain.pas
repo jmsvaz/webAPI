@@ -91,6 +91,7 @@ begin
       cbSearchMethod.Items.Add('Primary Translations');
       cbSearchMethod.Items.Add('Movie Genres');
       cbSearchMethod.Items.Add('TV Genres');
+      cbSearchMethod.Items.Add('Movie by TMDBid');
 
       cbSearchMethod.ItemIndex:= 0;
     end;
@@ -168,7 +169,14 @@ begin
           aResult:= aTMDBAPI.MovieGenres;
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'TV Genres' then
           aResult:= aTMDBAPI.TVGenres;
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Movie by TMDBid' then
+          aResult:= aTMDBAPI.GetMovie(edSearch.Text);
 
+        if aResult is TTMDBConfiguration then
+          mmResult.Append('Base_URL: ' + TTMDBConfiguration(aResult).Images.Base_URL);
+
+        if aResult is TTMDBMovie then
+          mmResult.Append('Movie Title: ' + TTMDBMovie(aResult).Title);
 
       end;
     if Assigned(aResult) then
