@@ -16,7 +16,6 @@ type
       fJSONData: TJSONData;
       function GetJSON: string;
       procedure SetJSON(AValue: string); virtual;
-      procedure DeStream;
     public
       constructor Create(aJSON: string = '');
       destructor Destroy; override;
@@ -31,7 +30,6 @@ type
       fJSONData: TJSONData;
       function GetJSON: string;
       procedure SetJSON(AValue: string);
-      procedure DeStream;
     public
       constructor Create(AItemClass: TCollectionItemClass; aJSON: string = '');
       destructor Destroy; override;
@@ -46,7 +44,6 @@ type
       fJSONData: TJSONData;
       function GetJSON: string;
       procedure SetJSON(AValue: string);
-      procedure DeStream;
     public
       constructor Create(aJSON: string = '');
       destructor Destroy; override;
@@ -105,6 +102,19 @@ begin
   end;
 end;
 
+procedure DeStream(Const JSON : TJSONStringType; AObject : TObject);
+var
+  DeStreamer: TJSONDeStreamer;
+begin
+  DeStreamer := TJSONDeStreamer.Create(nil);
+  try
+    DeStreamer.Options:= DeStreamer.Options + [jdoIgnoreNulls,jdoCaseInsensitive];
+    DeStreamer.JSONToObject(JSON,AObject);
+  finally
+    DeStreamer.Free;
+  end;
+end;
+
 { TStringsJSONResponse }
 
 function TStringsJSONResponse.GetJSON: string;
@@ -120,20 +130,8 @@ begin
   if AValue <> EmptyStr then
     begin
       fJSONData:= fpJSON.GetJSON(AValue);
-      DeStream;
+      DeStream (AValue,self);
     end;
-end;
-
-procedure TStringsJSONResponse.DeStream;
-var
-  DeStreamer: TJSONDeStreamer;
-begin
-  DeStreamer := TJSONDeStreamer.Create(nil);
-  try
-    DeStreamer.JSONToObject(JSON,self);
-  finally
-    DeStreamer.Free;
-  end;
 end;
 
 constructor TStringsJSONResponse.Create(aJSON: string);
@@ -194,21 +192,10 @@ begin
   if AValue <> EmptyStr then
     begin
       fJSONData:= fpJSON.GetJSON(AValue);
-      DeStream;
+      DeStream(AValue,self);
     end;
 end;
 
-procedure TCollectionJSONResponse.DeStream;
-var
-  DeStreamer: TJSONDeStreamer;
-begin
-  DeStreamer := TJSONDeStreamer.Create(nil);
-  try
-    DeStreamer.JSONToObject(JSON,self);
-  finally
-    DeStreamer.Free;
-  end;
-end;
 
 constructor TCollectionJSONResponse.Create(AItemClass: TCollectionItemClass;
   aJSON: string);
@@ -262,20 +249,9 @@ begin
   if Assigned(fJSONData) then
     FreeAndNil(fJSONData);
   fJSONData:= fpJSON.GetJSON(AValue);
-  DeStream;
+  DeStream(AValue,self);
 end;
 
-procedure TCustomJSONResponse.DeStream;
-var
-  DeStreamer: TJSONDeStreamer;
-begin
-  DeStreamer := TJSONDeStreamer.Create(nil);
-  try
-    DeStreamer.JSONToObject(JSON,self);
-  finally
-    DeStreamer.Free;
-  end;
-end;
 
 end.
 

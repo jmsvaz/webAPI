@@ -80,7 +80,7 @@ type
       procedure SetName(AValue: string);
     published
       property ISO_639_1: string read FISO_639_1 write SetISO_639_1;
-      property English_name: string read FEnglish_name write SetEnglish_name;
+      property English_Name: string read FEnglish_name write SetEnglish_name;
       property Name: string read FName write SetName;
   end;
 
@@ -93,7 +93,6 @@ type
       FISO_3166_1: string;
       fZones: TStrings;
       procedure SetISO_3166_1(AValue: string);
-
     public
       constructor Create(ACollection: TCollection); override;
       destructor Destroy; override;
@@ -156,7 +155,7 @@ type
       procedure SetId(AValue: Integer);
       procedure SetName(AValue: string);
     published
-      property Id: Integer read FId write SetId;
+      property ID: Integer read FId write SetId;
       property Name: string read FName write SetName;
   end;
 
@@ -279,7 +278,7 @@ type
     published
       property Adult: Boolean read FAdult write SetAdult;
       property Backdrop_Path: string read FBackdrop_Path write SetBackdrop_Path;
-      property Belongs_To_Collection: TTMDBMovieCollection read fBelongs_To_Collection;
+      property Belongs_to_Collection: TTMDBMovieCollection read fBelongs_To_Collection;
       property Budget: Integer read FBudget write SetBudget;
       property Genres: TCollection read fGenres;
       property Homepage: string read FHomepage write SetHomepage;

@@ -174,6 +174,18 @@ begin
 
         if aResult is TTMDBConfiguration then
           mmResult.Append('Base_URL: ' + TTMDBConfiguration(aResult).Images.Base_URL);
+        if aResult is TTMDBCountries then
+          mmResult.Append('Total countries: ' + IntToStr(TTMDBCountries(aResult).Count));
+        if aResult is TTMDBJobs then
+          mmResult.Append('Total departments: ' + IntToStr(TTMDBJobs(aResult).Count));
+        if aResult is TTMDBLanguages then
+          mmResult.Append('Total languages: ' + IntToStr(TTMDBLanguages(aResult).Count));
+        if aResult is TTMDBTimeZones then
+          mmResult.Append('Total countries: ' + IntToStr(TTMDBTimeZones(aResult).Count));
+        if aResult is TTMDBPrimaryTranslations then
+          mmResult.Append('Total primeary translations: ' + IntToStr(TTMDBPrimaryTranslations(aResult).Count));
+        if aResult is TTMDBGenreList then
+          mmResult.Append('Total genres: ' + IntToStr(TTMDBGenreList(aResult).Genres.Count));
 
         if aResult is TTMDBMovie then
           mmResult.Append('Movie Title: ' + TTMDBMovie(aResult).Title);
