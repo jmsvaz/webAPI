@@ -189,10 +189,13 @@ begin
 
         if aResult is TTMDBMovie then
           begin
-            mmResult.Append('Movie Title: ' + TTMDBMovie(aResult).Title);
+            mmResult.Append('Movie: ' + TTMDBMovie(aResult).Title + ' (' + TTMDBMovie(aResult).Original_Title +')');
             mmResult.Append('Alternative titles count: ' + IntToStr(TTMDBMovie(aResult).Alternative_Titles.Titles.Count));
             mmResult.Append('Cast count: ' + IntToStr(TTMDBMovie(aResult).Credits.Cast.Count));
             mmResult.Append('Crew count: ' + IntToStr(TTMDBMovie(aResult).Credits.Crew.Count));
+            mmResult.Append('IMDB ID: ' + TTMDBMovie(aResult).External_IDs.IMDB_ID);
+            mmResult.Append('Posters count: ' + IntToStr(TTMDBMovie(aResult).Images.Posters.Count));
+            mmResult.Append('Backdrops count: ' + IntToStr(TTMDBMovie(aResult).Images.Backdrops.Count));
           end;
 
 

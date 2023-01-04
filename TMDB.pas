@@ -354,6 +354,76 @@ type
       property ID: Integer read FID write SetID;
   end;
 
+  { TTMDBMovieExternalIDs }
+
+  TTMDBMovieExternalIDs = class
+    private
+      FFacebook_ID: string;
+      FID: Integer;
+      FIMDB_ID: string;
+      FInstagram_ID: string;
+      FTwitter_ID: string;
+      procedure SetFacebook_ID(AValue: string);
+      procedure SetID(AValue: Integer);
+      procedure SetIMDB_ID(AValue: string);
+      procedure SetInstagram_ID(AValue: string);
+      procedure SetTwitter_ID(AValue: string);
+    public
+      constructor Create;
+      destructor Destroy; override;
+    published
+      property ID: Integer read FID write SetID;
+      property IMDB_ID: string read FIMDB_ID write SetIMDB_ID;
+      property Facebook_ID: string read FFacebook_ID write SetFacebook_ID;
+      property Instagram_ID: string read FInstagram_ID write SetInstagram_ID;
+      property Twitter_ID: string read FTwitter_ID write SetTwitter_ID;
+  end;
+
+  { TTMDBImage }
+
+  TTMDBImage = class(TCollectionitem)
+    private
+      FAspect_Ratio: Double;
+      FFile_Path: string;
+      FHeight: Integer;
+      FISO_639_1: string;
+      FVote_Average: Integer;
+      FVote_Count: Integer;
+      FWidth: Integer;
+      procedure SetAspect_Ratio(AValue: Double);
+      procedure SetFile_Path(AValue: string);
+      procedure SetHeight(AValue: Integer);
+      procedure SetISO_639_1(AValue: string);
+      procedure SetVote_Average(AValue: Integer);
+      procedure SetVote_Count(AValue: Integer);
+      procedure SetWidth(AValue: Integer);
+    published
+      property Aspect_Ratio: Double read FAspect_Ratio write SetAspect_Ratio;
+      property File_Path: string read FFile_Path write SetFile_Path;
+      property Height: Integer read FHeight write SetHeight;
+      property ISO_639_1: string read FISO_639_1 write SetISO_639_1;
+      property Vote_Average: Integer read FVote_Average write SetVote_Average;
+      property Vote_Count: Integer read FVote_Count write SetVote_Count;
+      property Width: Integer read FWidth write SetWidth;
+  end;
+
+  { TTMDBMovieImages }
+
+  TTMDBMovieImages = class(TCustomJSONResponse)
+    private
+      fBackdrops: TCollection;
+      FID: Integer;
+      fPosters: TCollection;
+      procedure SetID(AValue: Integer);
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property ID: Integer read FID write SetID;
+      property Backdrops: TCollection read fBackdrops;
+      property Posters: TCollection read fPosters;
+  end;
+
   { TTMDBMovie }
 
   TTMDBMovie = class(TCustomJSONResponse)
@@ -364,9 +434,11 @@ type
       fBelongs_To_Collection: TTMDBMovieCollection;
       FBudget: Integer;
       fCredits: TTMDBMovieCredits;
+      fExternal_IDs: TTMDBMovieExternalIDs;
       fGenres: TCollection;
       FHomepage: string;
       FID: Integer;
+      fImages: TTMDBMovieImages;
       FIMDB_ID: string;
       FOriginal_Language: string;
       FOriginal_Title: string;
@@ -436,6 +508,8 @@ type
       property Vote_Count: Integer read FVote_Count write SetVote_Count;
       property Alternative_Titles: TTMDBMovieAlternativeTitles read fAlternative_Titles;
       property Credits: TTMDBMovieCredits read fCredits;
+      property External_IDs: TTMDBMovieExternalIDs read fExternal_IDs;
+      property Images: TTMDBMovieImages read fImages;
   end;
 
   { TTMDB }
@@ -503,6 +577,114 @@ uses fphttpclient, Dialogs;
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBMovieImages }
+
+procedure TTMDBMovieImages.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+constructor TTMDBMovieImages.Create(aJSON: string);
+begin
+  fBackdrops:= TCollection.Create(TTMDBImage);
+  fPosters:= TCollection.Create(TTMDBImage);
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBMovieImages.Destroy;
+begin
+  fBackdrops.Free;
+  fPosters.Free;
+  inherited Destroy;
+end;
+
+{ TTMDBImage }
+
+procedure TTMDBImage.SetAspect_Ratio(AValue: Double);
+begin
+  if FAspect_Ratio=AValue then Exit;
+  FAspect_Ratio:=AValue;
+end;
+
+procedure TTMDBImage.SetFile_Path(AValue: string);
+begin
+  if FFile_Path=AValue then Exit;
+  FFile_Path:=AValue;
+end;
+
+procedure TTMDBImage.SetHeight(AValue: Integer);
+begin
+  if FHeight=AValue then Exit;
+  FHeight:=AValue;
+end;
+
+procedure TTMDBImage.SetISO_639_1(AValue: string);
+begin
+  if FISO_639_1=AValue then Exit;
+  FISO_639_1:=AValue;
+end;
+
+procedure TTMDBImage.SetVote_Average(AValue: Integer);
+begin
+  if FVote_Average=AValue then Exit;
+  FVote_Average:=AValue;
+end;
+
+procedure TTMDBImage.SetVote_Count(AValue: Integer);
+begin
+  if FVote_Count=AValue then Exit;
+  FVote_Count:=AValue;
+end;
+
+procedure TTMDBImage.SetWidth(AValue: Integer);
+begin
+  if FWidth=AValue then Exit;
+  FWidth:=AValue;
+end;
+
+{ TTMDBMovieExternalIDs }
+
+procedure TTMDBMovieExternalIDs.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBMovieExternalIDs.SetFacebook_ID(AValue: string);
+begin
+  if FFacebook_ID=AValue then Exit;
+  FFacebook_ID:=AValue;
+end;
+
+procedure TTMDBMovieExternalIDs.SetIMDB_ID(AValue: string);
+begin
+  if FIMDB_ID=AValue then Exit;
+  FIMDB_ID:=AValue;
+end;
+
+procedure TTMDBMovieExternalIDs.SetInstagram_ID(AValue: string);
+begin
+  if FInstagram_ID=AValue then Exit;
+  FInstagram_ID:=AValue;
+end;
+
+procedure TTMDBMovieExternalIDs.SetTwitter_ID(AValue: string);
+begin
+  if FTwitter_ID=AValue then Exit;
+  FTwitter_ID:=AValue;
+end;
+
+constructor TTMDBMovieExternalIDs.Create;
+begin
+  //inherited Create(aJSON);
+end;
+
+destructor TTMDBMovieExternalIDs.Destroy;
+begin
+  inherited Destroy;
+end;
 
 { TTMDBMovieCrewItem }
 
@@ -728,6 +910,7 @@ begin
   FBackdrop_Path:=AValue;
 end;
 
+
 { TTMDBMovieProductionCompany }
 
 procedure TTMDBMovieProductionCompany.SetName(AValue: string);
@@ -900,6 +1083,8 @@ begin
   fSpoken_Languages:= TCollection.Create(TTMDBLanguageItem);
   fAlternative_Titles:= TTMDBMovieAlternativeTitles.Create;
   fCredits:= TTMDBMovieCredits.Create;
+  fExternal_IDs:= TTMDBMovieExternalIDs.Create;
+  fImages:= TTMDBMovieImages.Create;
     
   inherited Create(aJSON);
 end;
@@ -913,6 +1098,8 @@ begin
   fGenres.Free;
   fCredits.Free;
   fAlternative_Titles.Free;
+  fExternal_IDs.Free;
+  fImages.Free;
   inherited Destroy;
 end;
 
@@ -1290,7 +1477,7 @@ function TTMDB.MovieURL(aMovieID: string): string;
 begin
   Result:= TMDBBASEURL + TMDBVersionString[Version] + '/movie/' + aMovieID + '?api_key='
            + APIKey + '&language=' + Language + '&include_image_language=en,null'
-           + '&append_to_response=alternative_titles,credits';
+           + '&append_to_response=alternative_titles,credits,external_ids,images,keywords,release_dates';
 end;
 
 function TTMDB.DoRequest(aURL: string): string;
