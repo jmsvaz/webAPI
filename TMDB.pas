@@ -223,14 +223,147 @@ type
       property Name: string read FName write SetName;
   end;
 
+  { TTMDBMovieTitleItem }
+
+  TTMDBMovieTitleItem = class(TCollectionitem)
+    private
+      FISO_3166_1: string;
+      FTitle: string;
+      procedure SetISO_3166_1(AValue: string);
+      procedure SetTitle(AValue: string);
+
+    published
+      property ISO_3166_1: string read FISO_3166_1 write SetISO_3166_1;
+      property Title: string read FTitle write SetTitle;
+//      property Type: string   // cannot get this attribute because "type" is a reserved word in freepascal
+  end;
+
+  { TTMDBMovieAlternativeTitles }
+
+  TTMDBMovieAlternativeTitles = class(TCustomJSONResponse)
+    private
+      FID: Integer;
+      fTitles: TCollection;
+      procedure SetID(AValue: Integer);
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property Titles: TCollection read fTitles;
+      property ID: Integer read FID write SetID;
+  end;
+
+
+  { TTMDBMovieCastItem }
+
+  TTMDBMovieCastItem = class(TCollectionitem)
+    private
+      FAdult: string;
+      FCast_ID: Integer;
+      FCharacter: string;
+      FCredit_ID: string;
+      FGender: Integer;
+      FID: Integer;
+      FKnown_for_Department: string;
+      FName: string;
+      FOrder: Integer;
+      FOriginal_Name: string;
+      FPopularity: Double;
+      FProfile_Path: string;
+      procedure SetAdult(AValue: string);
+      procedure SetCast_ID(AValue: Integer);
+      procedure SetCharacter(AValue: string);
+      procedure SetCredit_ID(AValue: string);
+      procedure SetGender(AValue: Integer);
+      procedure SetID(AValue: Integer);
+      procedure SetKnown_for_Department(AValue: string);
+      procedure SetName(AValue: string);
+      procedure SetOrder(AValue: Integer);
+      procedure SetOriginal_Name(AValue: string);
+      procedure SetPopularity(AValue: Double);
+      procedure SetProfile_Path(AValue: string);
+    published
+      property Adult: string read FAdult write SetAdult;
+      property Gender: Integer read FGender write SetGender;
+      property ID: Integer read FID write SetID;
+      property Known_for_Department: string read FKnown_for_Department write SetKnown_for_Department;
+      property Name: string read FName write SetName;
+      property Original_Name: string read FOriginal_Name write SetOriginal_Name;
+      property Popularity: Double read FPopularity write SetPopularity;
+      property Profile_Path: string read FProfile_Path write SetProfile_Path;
+      property Cast_ID: Integer read FCast_ID write SetCast_ID;
+      property Character: string read FCharacter write SetCharacter;
+      property Credit_ID: string read FCredit_ID write SetCredit_ID;
+      property Order: Integer read FOrder write SetOrder;
+  end;
+
+  { TTMDBMovieCrewItem }
+
+  TTMDBMovieCrewItem = class(TCollectionitem)
+    private
+      FAdult: string;
+      FCredit_ID: string;
+      FDepartment: string;
+      FGender: Integer;
+      FID: Integer;
+      FJob: string;
+      FKnown_for_Department: string;
+      FName: string;
+      FOriginal_Name: string;
+      FPopularity: Double;
+      FProfile_Path: string;
+      procedure SetAdult(AValue: string);
+      procedure SetCredit_ID(AValue: string);
+      procedure SetDepartment(AValue: string);
+      procedure SetGender(AValue: Integer);
+      procedure SetID(AValue: Integer);
+      procedure SetJob(AValue: string);
+      procedure SetKnown_for_Department(AValue: string);
+      procedure SetName(AValue: string);
+      procedure SetOriginal_Name(AValue: string);
+      procedure SetPopularity(AValue: Double);
+      procedure SetProfile_Path(AValue: string);
+    published
+      property Adult: string read FAdult write SetAdult;
+      property Gender: Integer read FGender write SetGender;
+      property ID: Integer read FID write SetID;
+      property Known_for_Department: string read FKnown_for_Department write SetKnown_for_Department;
+      property Name: string read FName write SetName;
+      property Original_Name: string read FOriginal_Name write SetOriginal_Name;
+      property Popularity: Double read FPopularity write SetPopularity;
+      property Profile_Path: string read FProfile_Path write SetProfile_Path;
+      property Credit_ID: string read FCredit_ID write SetCredit_ID;
+      property Department: string read FDepartment write SetDepartment;
+      property Job: string read FJob write SetJob;
+  end;
+
+  { TTMDBMovieCredits }
+
+  TTMDBMovieCredits = class(TCustomJSONResponse)
+    private
+      fCast: TCollection;
+      fCrew: TCollection;
+      FID: Integer;
+      procedure SetID(AValue: Integer);
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property Cast: TCollection read fCast;
+      property Crew: TCollection read fCrew;
+      property ID: Integer read FID write SetID;
+  end;
+
   { TTMDBMovie }
 
   TTMDBMovie = class(TCustomJSONResponse)
     private
       FAdult: Boolean;
+      fAlternative_Titles: TTMDBMovieAlternativeTitles;
       FBackdrop_Path: string;
       fBelongs_To_Collection: TTMDBMovieCollection;
       FBudget: Integer;
+      fCredits: TTMDBMovieCredits;
       fGenres: TCollection;
       FHomepage: string;
       FID: Integer;
@@ -301,6 +434,8 @@ type
       property Video: Boolean read FVideo write SetVideo;
       property Vote_Average: Double read FVote_Average write SetVote_Average;
       property Vote_Count: Integer read FVote_Count write SetVote_Count;
+      property Alternative_Titles: TTMDBMovieAlternativeTitles read fAlternative_Titles;
+      property Credits: TTMDBMovieCredits read fCredits;
   end;
 
   { TTMDB }
@@ -368,6 +503,204 @@ uses fphttpclient, Dialogs;
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBMovieCrewItem }
+
+procedure TTMDBMovieCrewItem.SetAdult(AValue: string);
+begin
+  if FAdult=AValue then Exit;
+  FAdult:=AValue;
+end;
+
+procedure TTMDBMovieCrewItem.SetCredit_ID(AValue: string);
+begin
+  if FCredit_ID=AValue then Exit;
+  FCredit_ID:=AValue;
+end;
+
+procedure TTMDBMovieCrewItem.SetDepartment(AValue: string);
+begin
+  if FDepartment=AValue then Exit;
+  FDepartment:=AValue;
+end;
+
+procedure TTMDBMovieCrewItem.SetGender(AValue: Integer);
+begin
+  if FGender=AValue then Exit;
+  FGender:=AValue;
+end;
+
+procedure TTMDBMovieCrewItem.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBMovieCrewItem.SetJob(AValue: string);
+begin
+  if FJob=AValue then Exit;
+  FJob:=AValue;
+end;
+
+procedure TTMDBMovieCrewItem.SetKnown_for_Department(AValue: string);
+begin
+  if FKnown_for_Department=AValue then Exit;
+  FKnown_for_Department:=AValue;
+end;
+
+procedure TTMDBMovieCrewItem.SetName(AValue: string);
+begin
+  if FName=AValue then Exit;
+  FName:=AValue;
+end;
+
+procedure TTMDBMovieCrewItem.SetOriginal_Name(AValue: string);
+begin
+  if FOriginal_Name=AValue then Exit;
+  FOriginal_Name:=AValue;
+end;
+
+procedure TTMDBMovieCrewItem.SetPopularity(AValue: Double);
+begin
+  if FPopularity=AValue then Exit;
+  FPopularity:=AValue;
+end;
+
+procedure TTMDBMovieCrewItem.SetProfile_Path(AValue: string);
+begin
+  if FProfile_Path=AValue then Exit;
+  FProfile_Path:=AValue;
+end;
+
+{ TTMDBMovieCastItem }
+
+procedure TTMDBMovieCastItem.SetAdult(AValue: string);
+begin
+  if FAdult=AValue then Exit;
+  FAdult:=AValue;
+end;
+
+procedure TTMDBMovieCastItem.SetCast_ID(AValue: Integer);
+begin
+  if FCast_ID=AValue then Exit;
+  FCast_ID:=AValue;
+end;
+
+procedure TTMDBMovieCastItem.SetCharacter(AValue: string);
+begin
+  if FCharacter=AValue then Exit;
+  FCharacter:=AValue;
+end;
+
+procedure TTMDBMovieCastItem.SetCredit_ID(AValue: string);
+begin
+  if FCredit_ID=AValue then Exit;
+  FCredit_ID:=AValue;
+end;
+
+procedure TTMDBMovieCastItem.SetGender(AValue: Integer);
+begin
+  if FGender=AValue then Exit;
+  FGender:=AValue;
+end;
+
+procedure TTMDBMovieCastItem.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBMovieCastItem.SetKnown_for_Department(AValue: string);
+begin
+  if FKnown_for_Department=AValue then Exit;
+  FKnown_for_Department:=AValue;
+end;
+
+procedure TTMDBMovieCastItem.SetName(AValue: string);
+begin
+  if FName=AValue then Exit;
+  FName:=AValue;
+end;
+
+procedure TTMDBMovieCastItem.SetOrder(AValue: Integer);
+begin
+  if FOrder=AValue then Exit;
+  FOrder:=AValue;
+end;
+
+procedure TTMDBMovieCastItem.SetOriginal_Name(AValue: string);
+begin
+  if FOriginal_Name=AValue then Exit;
+  FOriginal_Name:=AValue;
+end;
+
+procedure TTMDBMovieCastItem.SetPopularity(AValue: Double);
+begin
+  if FPopularity=AValue then Exit;
+  FPopularity:=AValue;
+end;
+
+procedure TTMDBMovieCastItem.SetProfile_Path(AValue: string);
+begin
+  if FProfile_Path=AValue then Exit;
+  FProfile_Path:=AValue;
+end;
+
+{ TTMDBMovieCredits }
+
+procedure TTMDBMovieCredits.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+constructor TTMDBMovieCredits.Create(aJSON: string);
+begin
+  fCast:= TCollection.Create(TTMDBMovieCastItem);
+  fCrew:= TCollection.Create(TTMDBMovieCrewItem);
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBMovieCredits.Destroy;
+begin
+  fCast.Free;
+  fCrew.Free;
+  inherited Destroy;
+end;
+
+{ TTMDBMovieTitleItem }
+
+procedure TTMDBMovieTitleItem.SetISO_3166_1(AValue: string);
+begin
+  if FISO_3166_1=AValue then Exit;
+  FISO_3166_1:=AValue;
+end;
+
+procedure TTMDBMovieTitleItem.SetTitle(AValue: string);
+begin
+  if FTitle=AValue then Exit;
+  FTitle:=AValue;
+end;
+
+{ TTMDBMovieAlternativeTitles }
+
+procedure TTMDBMovieAlternativeTitles.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+constructor TTMDBMovieAlternativeTitles.Create(aJSON: string);
+begin
+  fTitles:= TCollection.Create(TTMDBMovieTitleItem);
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBMovieAlternativeTitles.Destroy;
+begin
+  fTitles.Free;
+  inherited Destroy;
+end;
 
 { TTMDBMovieCollection }
 
@@ -565,6 +898,8 @@ begin
   fProduction_Companies:= TCollection.Create(TTMDBMovieProductionCompany);
   fProduction_Countries:= TCollection.Create(TTMDBMovieCountry);
   fSpoken_Languages:= TCollection.Create(TTMDBLanguageItem);
+  fAlternative_Titles:= TTMDBMovieAlternativeTitles.Create;
+  fCredits:= TTMDBMovieCredits.Create;
     
   inherited Create(aJSON);
 end;
@@ -576,6 +911,8 @@ begin
   fProduction_Companies.Free;
   fSpoken_Languages.Free;
   fGenres.Free;
+  fCredits.Free;
+  fAlternative_Titles.Free;
   inherited Destroy;
 end;
 
@@ -951,10 +1288,9 @@ end;
 
 function TTMDB.MovieURL(aMovieID: string): string;
 begin
-  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/movie/' + aMovieID +
-           '?api_key=' + APIKey + '&language=' + Language + '&include_image_language=en,null';
-
-//           + '&append_to_response=videos,images';
+  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/movie/' + aMovieID + '?api_key='
+           + APIKey + '&language=' + Language + '&include_image_language=en,null'
+           + '&append_to_response=alternative_titles,credits';
 end;
 
 function TTMDB.DoRequest(aURL: string): string;

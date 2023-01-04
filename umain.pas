@@ -188,7 +188,13 @@ begin
           mmResult.Append('Total genres: ' + IntToStr(TTMDBGenreList(aResult).Genres.Count));
 
         if aResult is TTMDBMovie then
-          mmResult.Append('Movie Title: ' + TTMDBMovie(aResult).Title);
+          begin
+            mmResult.Append('Movie Title: ' + TTMDBMovie(aResult).Title);
+            mmResult.Append('Alternative titles count: ' + IntToStr(TTMDBMovie(aResult).Alternative_Titles.Titles.Count));
+            mmResult.Append('Cast count: ' + IntToStr(TTMDBMovie(aResult).Credits.Cast.Count));
+            mmResult.Append('Crew count: ' + IntToStr(TTMDBMovie(aResult).Credits.Crew.Count));
+          end;
+
 
       end;
     if Assigned(aResult) then
