@@ -355,29 +355,35 @@ type
       property ID: Integer read FID write SetID;
   end;
 
-  { TTMDBMovieExternalIDs }
+  { TTMDBExternalIDs }
 
-  TTMDBMovieExternalIDs = class
+  TTMDBExternalIDs = class
     private
       FFacebook_ID: string;
+      FFreebase_ID: string;
+      FFreebase_MID: string;
       FID: Integer;
       FIMDB_ID: string;
       FInstagram_ID: string;
+      FTVRage_ID: string;
       FTwitter_ID: string;
       procedure SetFacebook_ID(AValue: string);
+      procedure SetFreebase_ID(AValue: string);
+      procedure SetFreebase_MID(AValue: string);
       procedure SetID(AValue: Integer);
       procedure SetIMDB_ID(AValue: string);
       procedure SetInstagram_ID(AValue: string);
+      procedure SetTVRage_ID(AValue: string);
       procedure SetTwitter_ID(AValue: string);
-    public
-      constructor Create;
-      destructor Destroy; override;
     published
       property ID: Integer read FID write SetID;
       property IMDB_ID: string read FIMDB_ID write SetIMDB_ID;
       property Facebook_ID: string read FFacebook_ID write SetFacebook_ID;
       property Instagram_ID: string read FInstagram_ID write SetInstagram_ID;
       property Twitter_ID: string read FTwitter_ID write SetTwitter_ID;
+      property Freebase_MID: string read FFreebase_MID write SetFreebase_MID;
+      property Freebase_ID: string read FFreebase_ID write SetFreebase_ID;
+      property TVRage_ID: string read FTVRage_ID write SetTVRage_ID;
   end;
 
   { TTMDBImage }
@@ -516,7 +522,7 @@ type
       fBelongs_To_Collection: TTMDBMovieCollection;
       FBudget: Integer;
       fCredits: TTMDBMovieCredits;
-      fExternal_IDs: TTMDBMovieExternalIDs;
+      fExternal_IDs: TTMDBExternalIDs;
       fGenres: TCollection;
       FHomepage: string;
       FID: Integer;
@@ -592,7 +598,7 @@ type
       property Vote_Count: Integer read FVote_Count write SetVote_Count;
       property Alternative_Titles: TTMDBMovieAlternativeTitles read fAlternative_Titles;
       property Credits: TTMDBMovieCredits read fCredits;
-      property External_IDs: TTMDBMovieExternalIDs read fExternal_IDs;
+      property External_IDs: TTMDBExternalIDs read fExternal_IDs;
       property Images: TTMDBMovieImages read fImages;
       property Keywords: TTMDBMovieKeywords read fKeywords;
       property Release_Dates: TTMDBMovieReleaseDates read fRelease_Dates;
@@ -1063,47 +1069,56 @@ begin
   FWidth:=AValue;
 end;
 
-{ TTMDBMovieExternalIDs }
+{ TTMDBExternalIDs }
 
-procedure TTMDBMovieExternalIDs.SetID(AValue: Integer);
+procedure TTMDBExternalIDs.SetID(AValue: Integer);
 begin
   if FID=AValue then Exit;
   FID:=AValue;
 end;
 
-procedure TTMDBMovieExternalIDs.SetFacebook_ID(AValue: string);
+procedure TTMDBExternalIDs.SetFacebook_ID(AValue: string);
 begin
   if FFacebook_ID=AValue then Exit;
   FFacebook_ID:=AValue;
 end;
 
-procedure TTMDBMovieExternalIDs.SetIMDB_ID(AValue: string);
+procedure TTMDBExternalIDs.SetFreebase_ID(AValue: string);
+begin
+  if FFreebase_ID=AValue then Exit;
+  FFreebase_ID:=AValue;
+end;
+
+procedure TTMDBExternalIDs.SetFreebase_MID(AValue: string);
+begin
+  if FFreebase_MID=AValue then Exit;
+  FFreebase_MID:=AValue;
+end;
+
+procedure TTMDBExternalIDs.SetIMDB_ID(AValue: string);
 begin
   if FIMDB_ID=AValue then Exit;
   FIMDB_ID:=AValue;
 end;
 
-procedure TTMDBMovieExternalIDs.SetInstagram_ID(AValue: string);
+procedure TTMDBExternalIDs.SetInstagram_ID(AValue: string);
 begin
   if FInstagram_ID=AValue then Exit;
   FInstagram_ID:=AValue;
 end;
 
-procedure TTMDBMovieExternalIDs.SetTwitter_ID(AValue: string);
+procedure TTMDBExternalIDs.SetTVRage_ID(AValue: string);
+begin
+  if FTVRage_ID=AValue then Exit;
+  FTVRage_ID:=AValue;
+end;
+
+procedure TTMDBExternalIDs.SetTwitter_ID(AValue: string);
 begin
   if FTwitter_ID=AValue then Exit;
   FTwitter_ID:=AValue;
 end;
 
-constructor TTMDBMovieExternalIDs.Create;
-begin
-  //inherited Create(aJSON);
-end;
-
-destructor TTMDBMovieExternalIDs.Destroy;
-begin
-  inherited Destroy;
-end;
 
 { TTMDBMovieCrewItem }
 
@@ -1502,7 +1517,7 @@ begin
   fSpoken_Languages:= TCollection.Create(TTMDBLanguageItem);
   fAlternative_Titles:= TTMDBMovieAlternativeTitles.Create;
   fCredits:= TTMDBMovieCredits.Create;
-  fExternal_IDs:= TTMDBMovieExternalIDs.Create;
+  fExternal_IDs:= TTMDBExternalIDs.Create;
   fImages:= TTMDBMovieImages.Create;
   fKeywords:= TTMDBMovieKeywords.Create;
   fRelease_Dates:= TTMDBMovieReleaseDates.Create;
