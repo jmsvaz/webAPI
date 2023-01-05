@@ -93,6 +93,7 @@ begin
       cbSearchMethod.Items.Add('TV Genres');
       cbSearchMethod.Items.Add('Movie by TMDBid');
       cbSearchMethod.Items.Add('Company by TMDBid');
+      cbSearchMethod.Items.Add('Person by TMDBid');
 
       cbSearchMethod.ItemIndex:= 0;
     end;
@@ -174,7 +175,8 @@ begin
           aResult:= aTMDBAPI.GetMovie(edSearch.Text);
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Company by TMDBid' then
           aResult:= aTMDBAPI.GetCompany(edSearch.Text);
-
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Person by TMDBid' then
+          aResult:= aTMDBAPI.GetPerson(edSearch.Text);
 
         if aResult is TTMDBConfiguration then
           mmResult.Append('Base_URL: ' + TTMDBConfiguration(aResult).Images.Base_URL);
@@ -210,6 +212,18 @@ begin
              mmResult.Append('Parent company: ' + TTMDBCompany(aResult).Parent_Company.Name);
              mmResult.Append('Alternative names count: ' + IntToStr(TTMDBCompany(aResult).Alternative_Names.Results.Count));
              mmResult.Append('Logos count: ' + IntToStr(TTMDBCompany(aResult).Images.Logos.Count));
+           end;
+
+         if aResult is TTMDBPerson then
+           begin
+             mmResult.Append('Name: ' + TTMDBPerson(aResult).Name);
+             mmResult.Append('Birthday: ' + TTMDBPerson(aResult).Birthday);
+             mmResult.Append('Profiles count: ' + IntToStr(TTMDBPerson(aResult).Images.Profiles.Count));
+             mmResult.Append('Movie Cast count: ' + IntToStr(TTMDBPerson(aResult).Movie_Credits.Cast.Count));
+             mmResult.Append('Movie Crew count: ' + IntToStr(TTMDBPerson(aResult).Movie_Credits.Crew.Count));
+             mmResult.Append('TV Cast count: ' + IntToStr(TTMDBPerson(aResult).TV_Credits.Cast.Count));
+             mmResult.Append('TV Crew count: ' + IntToStr(TTMDBPerson(aResult).TV_Credits.Crew.Count));
+             mmResult.Append('IMDB ID: ' + TTMDBPerson(aResult).External_IDs.IMDB_ID);
            end;
 
       end;
