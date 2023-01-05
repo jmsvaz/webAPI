@@ -92,6 +92,7 @@ begin
       cbSearchMethod.Items.Add('Movie Genres');
       cbSearchMethod.Items.Add('TV Genres');
       cbSearchMethod.Items.Add('Movie by TMDBid');
+      cbSearchMethod.Items.Add('Company by TMDBid');
 
       cbSearchMethod.ItemIndex:= 0;
     end;
@@ -171,6 +172,9 @@ begin
           aResult:= aTMDBAPI.TVGenres;
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Movie by TMDBid' then
           aResult:= aTMDBAPI.GetMovie(edSearch.Text);
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Company by TMDBid' then
+          aResult:= aTMDBAPI.GetCompany(edSearch.Text);
+
 
         if aResult is TTMDBConfiguration then
           mmResult.Append('Base_URL: ' + TTMDBConfiguration(aResult).Images.Base_URL);
@@ -196,8 +200,17 @@ begin
             mmResult.Append('IMDB ID: ' + TTMDBMovie(aResult).External_IDs.IMDB_ID);
             mmResult.Append('Posters count: ' + IntToStr(TTMDBMovie(aResult).Images.Posters.Count));
             mmResult.Append('Backdrops count: ' + IntToStr(TTMDBMovie(aResult).Images.Backdrops.Count));
+            mmResult.Append('Keywords count: ' + IntToStr(TTMDBMovie(aResult).Keywords.Keywords.Count));
+            mmResult.Append('Release dates count: ' + IntToStr(TTMDBMovie(aResult).Release_Dates.Results.Count));
           end;
 
+         if aResult is TTMDBCompany then
+           begin
+             mmResult.Append('Company: ' + TTMDBCompany(aResult).Name);
+             mmResult.Append('Parent company: ' + TTMDBCompany(aResult).Parent_Company.Name);
+             mmResult.Append('Alternative names count: ' + IntToStr(TTMDBCompany(aResult).Alternative_Names.Results.Count));
+             mmResult.Append('Logos count: ' + IntToStr(TTMDBCompany(aResult).Images.Logos.Count));
+           end;
 
       end;
     if Assigned(aResult) then

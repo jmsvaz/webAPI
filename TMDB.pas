@@ -22,6 +22,7 @@ type
   TTMDBAPIConfigurationError = class(TTMDBAPIError);
   TTMDBGenreListError = class(TTMDBAPIError);
   TTMDBMovieError = class(TTMDBAPIError);
+  TTMDBCompanyError = class(TTMDBAPIError);
 
 
   TTMDBAPICountriesError = class(TTMDBCollectionError);
@@ -385,6 +386,7 @@ type
     private
       FAspect_Ratio: Double;
       FFile_Path: string;
+      FFile_Type: string;
       FHeight: Integer;
       FISO_639_1: string;
       FVote_Average: Integer;
@@ -392,6 +394,7 @@ type
       FWidth: Integer;
       procedure SetAspect_Ratio(AValue: Double);
       procedure SetFile_Path(AValue: string);
+      procedure SetFile_Type(AValue: string);
       procedure SetHeight(AValue: Integer);
       procedure SetISO_639_1(AValue: string);
       procedure SetVote_Average(AValue: Integer);
@@ -400,6 +403,7 @@ type
     published
       property Aspect_Ratio: Double read FAspect_Ratio write SetAspect_Ratio;
       property File_Path: string read FFile_Path write SetFile_Path;
+      property File_Type: string read FFile_Type write SetFile_Type;
       property Height: Integer read FHeight write SetHeight;
       property ISO_639_1: string read FISO_639_1 write SetISO_639_1;
       property Vote_Average: Integer read FVote_Average write SetVote_Average;
@@ -424,6 +428,84 @@ type
       property Posters: TCollection read fPosters;
   end;
 
+  { TTMDBMovieKeywordItem }
+
+  TTMDBMovieKeywordItem = class(TCollectionitem)
+    private
+      FID: Integer;
+      FName: string;
+      procedure SetID(AValue: Integer);
+      procedure SetName(AValue: string);
+    published
+      property ID: Integer read FID write SetID;
+      property Name: string read FName write SetName;
+  end;
+
+  { TTMDBMovieKeywords }
+
+  TTMDBMovieKeywords = class(TCustomJSONResponse)
+    private
+      FID: Integer;
+      fKeywords: TCollection;
+      procedure SetID(AValue: Integer);
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property ID: Integer read FID write SetID;
+      property Keywords: TCollection read fKeywords;
+  end;
+
+  { TTMDBMovieReleaseDateItem }
+
+  TTMDBMovieReleaseDateItem = class(TCollectionitem)
+    private
+      FCertification: string;
+      FISO_639_1: string;
+      FNote: string;
+      FRelease_Date: string;
+      procedure SetCertification(AValue: string);
+      procedure SetISO_639_1(AValue: string);
+      procedure SetNote(AValue: string);
+      procedure SetRelease_Date(AValue: string);
+    published
+      property Certification: string read FCertification write SetCertification;
+      property ISO_639_1: string read FISO_639_1 write SetISO_639_1;
+      property Release_Date: string read FRelease_Date write SetRelease_Date;
+//      property Type: Integer
+      property Note: string read FNote write SetNote;
+  end;
+
+  { TTMDBMovieReleaseDateResult }
+
+  TTMDBMovieReleaseDateResult = class(TCollectionitem)
+    private
+      FISO_3166_1: string;
+      fRelease_Dates: TCollection;
+      procedure SetISO_3166_1(AValue: string);
+    public
+      constructor Create(ACollection: TCollection); override;
+      destructor Destroy; override;
+    published
+      property ISO_3166_1: string read FISO_3166_1 write SetISO_3166_1;
+      property Release_Dates: TCollection read fRelease_Dates;
+  end;
+
+  { TTMDBMovieReleaseDates }
+
+  TTMDBMovieReleaseDates = class(TCustomJSONResponse)
+    private
+      FID: Integer;
+      fResults: TCollection;
+      procedure SetID(AValue: Integer);
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property ID: Integer read FID write SetID;
+      property Results: TCollection read fResults;
+  end;
+
   { TTMDBMovie }
 
   TTMDBMovie = class(TCustomJSONResponse)
@@ -440,6 +522,7 @@ type
       FID: Integer;
       fImages: TTMDBMovieImages;
       FIMDB_ID: string;
+      fKeywords: TTMDBMovieKeywords;
       FOriginal_Language: string;
       FOriginal_Title: string;
       FOverview: string;
@@ -448,6 +531,7 @@ type
       fProduction_Companies: TCollection;
       fProduction_Countries: TCollection;
       FRelease_Date: string;
+      fRelease_Dates: TTMDBMovieReleaseDates;
       FRevenue: Integer;
       FRuntime: Integer;
       fSpoken_Languages: TCollection;
@@ -510,6 +594,105 @@ type
       property Credits: TTMDBMovieCredits read fCredits;
       property External_IDs: TTMDBMovieExternalIDs read fExternal_IDs;
       property Images: TTMDBMovieImages read fImages;
+      property Keywords: TTMDBMovieKeywords read fKeywords;
+      property Release_Dates: TTMDBMovieReleaseDates read fRelease_Dates;
+  end;
+
+  { TTMDBParentCompany }
+
+  TTMDBParentCompany = class
+    private
+      FID: Integer;
+      FLogo_Path: string;
+      FName: string;
+      procedure SetID(AValue: Integer);
+      procedure SetLogo_Path(AValue: string);
+      procedure SetName(AValue: string);
+    published
+      property ID: Integer read FID write SetID;
+      property Logo_Path: string read FLogo_Path write SetLogo_Path;
+      property Name: string read FName write SetName;
+  end;
+
+  { TTMDBCompanyImages }
+
+  TTMDBCompanyImages = class(TCustomJSONResponse)
+    private
+      FID: Integer;
+      fLogos: TCollection;
+      procedure SetID(AValue: Integer);
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property ID: Integer read FID write SetID;
+      property Logos: TCollection read fLogos;
+  end;
+
+
+  { TTMDBCompanyNameItem }
+
+  TTMDBCompanyNameItem = class(TCollectionitem)
+    private
+      FName: string;
+      procedure SetName(AValue: string);
+    published
+      property Name: string read FName write SetName;
+//      property Type: string   // cannot get this attribute because "type" is a reserved word in freepascal
+  end;
+
+
+  { TTMDBCompanyAlternativeNames }
+
+  TTMDBCompanyAlternativeNames = class(TCustomJSONResponse)
+    private
+      FID: Integer;
+      fResults: TCollection;
+      procedure SetID(AValue: Integer);
+
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property Results: TCollection read fResults;
+      property ID: Integer read FID write SetID;
+  end;
+
+  { TTMDBCompany }
+
+  TTMDBCompany = class(TCustomJSONResponse)
+    private
+      fAlternative_Names: TTMDBCompanyAlternativeNames;
+      FDescription: string;
+      FHeadquarters: string;
+      FHomepage: string;
+      FID: Integer;
+      fImages: TTMDBCompanyImages;
+      FLogo_Path: string;
+      FName: string;
+      FOrigin_Country: string;
+      fParent_Company: TTMDBParentCompany;
+      procedure SetDescription(AValue: string);
+      procedure SetHeadquarters(AValue: string);
+      procedure SetHomepage(AValue: string);
+      procedure SetID(AValue: Integer);
+      procedure SetLogo_Path(AValue: string);
+      procedure SetName(AValue: string);
+      procedure SetOrigin_Country(AValue: string);
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property Description: string read FDescription write SetDescription;
+      property Headquarters: string read FHeadquarters write SetHeadquarters;
+      property Homepage: string read FHomepage write SetHomepage;
+      property ID: Integer read FID write SetID;
+      property Logo_Path: string read FLogo_Path write SetLogo_Path;
+      property Name: string read FName write SetName;
+      property Origin_Country: string read FOrigin_Country write SetOrigin_Country;
+      property Parent_Company: TTMDBParentCompany read fParent_Company;
+      property Images: TTMDBCompanyImages read fImages;
+      property Alternative_Names: TTMDBCompanyAlternativeNames read fAlternative_Names;
   end;
 
   { TTMDB }
@@ -543,6 +726,7 @@ type
       function MovieGenresURL: string;
       function TVGenresURL: string;
       function MovieURL(aMovieID: string): string;
+      function CompanyURL(aCompanyID: string): string;
       function GetCountries: TCollectionJSONResponse;
       function GetJobs: TCollectionJSONResponse; 
       function GetLanguages: TCollectionJSONResponse;
@@ -568,6 +752,7 @@ type
       property MovieGenres: TTMDBGenreList read fMovieGenres;
       property TVGenres: TTMDBGenreList read fTVGenres;
       function GetMovie(aMovieID: string): TCustomJSONResponse;
+      function GetCompany(aCompanyID: string): TCustomJSONResponse;
     end;
 
 implementation
@@ -577,6 +762,234 @@ uses fphttpclient, Dialogs;
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBCompanyAlternativeNames }
+
+procedure TTMDBCompanyAlternativeNames.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+constructor TTMDBCompanyAlternativeNames.Create(aJSON: string);
+begin
+  fResults:= TCollection.Create(TTMDBCompanyNameItem);
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBCompanyAlternativeNames.Destroy;
+begin
+  fResults.Free;
+  inherited Destroy;
+end;
+
+
+{ TTMDBCompanyNameItem }
+
+procedure TTMDBCompanyNameItem.SetName(AValue: string);
+begin
+  if FName=AValue then Exit;
+  FName:=AValue;
+end;
+
+{ TTMDBCompanyImages }
+
+procedure TTMDBCompanyImages.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+constructor TTMDBCompanyImages.Create(aJSON: string);
+begin
+  fLogos:= TCollection.Create(TTMDBImage);
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBCompanyImages.Destroy;
+begin
+  fLogos.Free;
+  inherited Destroy;
+end;
+
+{ TTMDBParentCompany }
+
+procedure TTMDBParentCompany.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBParentCompany.SetLogo_Path(AValue: string);
+begin
+  if FLogo_Path=AValue then Exit;
+  FLogo_Path:=AValue;
+end;
+
+procedure TTMDBParentCompany.SetName(AValue: string);
+begin
+  if FName=AValue then Exit;
+  FName:=AValue;
+end;
+
+{ TTMDBCompany }
+
+procedure TTMDBCompany.SetDescription(AValue: string);
+begin
+  if FDescription=AValue then Exit;
+  FDescription:=AValue;
+end;
+
+procedure TTMDBCompany.SetHeadquarters(AValue: string);
+begin
+  if FHeadquarters=AValue then Exit;
+  FHeadquarters:=AValue;
+end;
+
+procedure TTMDBCompany.SetHomepage(AValue: string);
+begin
+  if FHomepage=AValue then Exit;
+  FHomepage:=AValue;
+end;
+
+procedure TTMDBCompany.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBCompany.SetLogo_Path(AValue: string);
+begin
+  if FLogo_Path=AValue then Exit;
+  FLogo_Path:=AValue;
+end;
+
+procedure TTMDBCompany.SetName(AValue: string);
+begin
+  if FName=AValue then Exit;
+  FName:=AValue;
+end;
+
+procedure TTMDBCompany.SetOrigin_Country(AValue: string);
+begin
+  if FOrigin_Country=AValue then Exit;
+  FOrigin_Country:=AValue;
+end;
+
+constructor TTMDBCompany.Create(aJSON: string);
+begin
+  fParent_Company:= TTMDBParentCompany.Create;
+  fImages:= TTMDBCompanyImages.Create;
+  fAlternative_Names:= TTMDBCompanyAlternativeNames.Create;
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBCompany.Destroy;
+begin
+  fParent_Company.Free;
+  fImages.Free;
+  fAlternative_Names.Free;
+  inherited Destroy;
+end;
+
+{ TTMDBMovieReleaseDates }
+
+procedure TTMDBMovieReleaseDates.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+constructor TTMDBMovieReleaseDates.Create(aJSON: string);
+begin
+  fResults:= TCollection.Create(TTMDBMovieReleaseDateResult);
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBMovieReleaseDates.Destroy;
+begin
+  fResults.Free;
+  inherited Destroy;
+end;
+
+{ TTMDBMovieReleaseDateResult }
+
+procedure TTMDBMovieReleaseDateResult.SetISO_3166_1(AValue: string);
+begin
+  if FISO_3166_1=AValue then Exit;
+  FISO_3166_1:=AValue;
+end;
+
+constructor TTMDBMovieReleaseDateResult.Create(ACollection: TCollection);
+begin
+  inherited Create(ACollection);
+  fRelease_Dates:= TCollection.Create(TTMDBMovieReleaseDateItem);
+end;
+
+destructor TTMDBMovieReleaseDateResult.Destroy;
+begin
+  fRelease_Dates.Free;
+  inherited;
+end;
+
+{ TTMDBMovieReleaseDateItem }
+
+procedure TTMDBMovieReleaseDateItem.SetCertification(AValue: string);
+begin
+  if FCertification=AValue then Exit;
+  FCertification:=AValue;
+end;
+
+procedure TTMDBMovieReleaseDateItem.SetISO_639_1(AValue: string);
+begin
+  if FISO_639_1=AValue then Exit;
+  FISO_639_1:=AValue;
+end;
+
+procedure TTMDBMovieReleaseDateItem.SetNote(AValue: string);
+begin
+  if FNote=AValue then Exit;
+  FNote:=AValue;
+end;
+
+procedure TTMDBMovieReleaseDateItem.SetRelease_Date(AValue: string);
+begin
+  if FRelease_Date=AValue then Exit;
+  FRelease_Date:=AValue;
+end;
+
+{ TTMDBMovieKeywords }
+
+procedure TTMDBMovieKeywords.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+constructor TTMDBMovieKeywords.Create(aJSON: string);
+begin
+  fKeywords:= TCollection.Create(TTMDBMovieKeywordItem);
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBMovieKeywords.Destroy;
+begin
+  inherited Destroy;
+end;
+
+{ TTMDBMovieKeywordItem }
+
+procedure TTMDBMovieKeywordItem.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBMovieKeywordItem.SetName(AValue: string);
+begin
+  if FName=AValue then Exit;
+  FName:=AValue;
+end;
 
 { TTMDBMovieImages }
 
@@ -612,6 +1025,12 @@ procedure TTMDBImage.SetFile_Path(AValue: string);
 begin
   if FFile_Path=AValue then Exit;
   FFile_Path:=AValue;
+end;
+
+procedure TTMDBImage.SetFile_Type(AValue: string);
+begin
+  if FFile_Type=AValue then Exit;
+  FFile_Type:=AValue;
 end;
 
 procedure TTMDBImage.SetHeight(AValue: Integer);
@@ -1085,6 +1504,8 @@ begin
   fCredits:= TTMDBMovieCredits.Create;
   fExternal_IDs:= TTMDBMovieExternalIDs.Create;
   fImages:= TTMDBMovieImages.Create;
+  fKeywords:= TTMDBMovieKeywords.Create;
+  fRelease_Dates:= TTMDBMovieReleaseDates.Create;
     
   inherited Create(aJSON);
 end;
@@ -1100,6 +1521,8 @@ begin
   fAlternative_Titles.Free;
   fExternal_IDs.Free;
   fImages.Free;
+  fKeywords.Free;
+  fRelease_Dates.Free;
   inherited Destroy;
 end;
 
@@ -1470,8 +1893,20 @@ begin
   except
     Result:= TTMDBMovieError.Create;
   end;
-
 end;
+
+function TTMDB.GetCompany(aCompanyID: string): TCustomJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= DoRequest(CompanyURL(aCompanyID));
+    Result:= TTMDBCompany.Create(aRequest);
+  except
+    Result:= TTMDBCompanyError.Create;
+  end;
+end;
+
 
 function TTMDB.MovieURL(aMovieID: string): string;
 begin
@@ -1479,6 +1914,14 @@ begin
            + APIKey + '&language=' + Language + '&include_image_language=en,null'
            + '&append_to_response=alternative_titles,credits,external_ids,images,keywords,release_dates';
 end;
+
+function TTMDB.CompanyURL(aCompanyID: string): string;
+begin
+  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/company/' + aCompanyID + '?api_key='
+           + APIKey + '&language=' + Language + '&include_image_language=en,null'
+           + '&append_to_response=alternative_names,images';
+end;
+
 
 function TTMDB.DoRequest(aURL: string): string;
 var
