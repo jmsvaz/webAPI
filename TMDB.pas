@@ -193,9 +193,9 @@ type
       property Backdrop_Path: string read FBackdrop_Path write SetBackdrop_Path;
   end;
 
-  { TTMDBMovieProductionCompany }
+  { TTMDBCompanyItem }
 
-  TTMDBMovieProductionCompany = class(TCollectionitem)
+  TTMDBCompanyItem = class(TCollectionitem)
     private
       FID: Integer;
       FLogo_Path: string;
@@ -441,9 +441,9 @@ type
       property Posters: TCollection read fPosters;
   end;
 
-  { TTMDBMovieKeywordItem }
+  { TTMDBKeywordItem }
 
-  TTMDBMovieKeywordItem = class(TCollectionitem)
+  TTMDBKeywordItem = class(TCollectionitem)
     private
       FID: Integer;
       FName: string;
@@ -611,21 +611,6 @@ type
       property Release_Dates: TTMDBMovieReleaseDates read fRelease_Dates;
   end;
 
-  { TTMDBCompanyItem }
-
-  TTMDBCompanyItem = class(TCollectionitem)
-    private
-      FID: Integer;
-      FLogo_Path: string;
-      FName: string;
-      procedure SetID(AValue: Integer);
-      procedure SetLogo_Path(AValue: string);
-      procedure SetName(AValue: string);
-    published
-      property ID: Integer read FID write SetID;
-      property Logo_Path: string read FLogo_Path write SetLogo_Path;
-      property Name: string read FName write SetName;
-  end;
 
   { TTMDBCompanyImages }
 
@@ -1821,26 +1806,6 @@ begin
   inherited Destroy;
 end;
 
-{ TTMDBCompanyItem }
-
-procedure TTMDBCompanyItem.SetID(AValue: Integer);
-begin
-  if FID=AValue then Exit;
-  FID:=AValue;
-end;
-
-procedure TTMDBCompanyItem.SetLogo_Path(AValue: string);
-begin
-  if FLogo_Path=AValue then Exit;
-  FLogo_Path:=AValue;
-end;
-
-procedure TTMDBCompanyItem.SetName(AValue: string);
-begin
-  if FName=AValue then Exit;
-  FName:=AValue;
-end;
-
 { TTMDBCompany }
 
 procedure TTMDBCompany.SetDescription(AValue: string);
@@ -1977,7 +1942,7 @@ end;
 
 constructor TTMDBMovieKeywords.Create(aJSON: string);
 begin
-  fKeywords:= TCollection.Create(TTMDBMovieKeywordItem);
+  fKeywords:= TCollection.Create(TTMDBKeywordItem);
   inherited Create(aJSON);
 end;
 
@@ -1986,15 +1951,15 @@ begin
   inherited Destroy;
 end;
 
-{ TTMDBMovieKeywordItem }
+{ TTMDBKeywordItem }
 
-procedure TTMDBMovieKeywordItem.SetID(AValue: Integer);
+procedure TTMDBKeywordItem.SetID(AValue: Integer);
 begin
   if FID=AValue then Exit;
   FID:=AValue;
 end;
 
-procedure TTMDBMovieKeywordItem.SetName(AValue: string);
+procedure TTMDBKeywordItem.SetName(AValue: string);
 begin
   if FName=AValue then Exit;
   FName:=AValue;
@@ -2360,27 +2325,27 @@ begin
 end;
 
 
-{ TTMDBMovieProductionCompany }
+{ TTMDBCompanyItem }
 
-procedure TTMDBMovieProductionCompany.SetName(AValue: string);
+procedure TTMDBCompanyItem.SetName(AValue: string);
 begin
   if FName=AValue then Exit;
   FName:=AValue;
 end;
 
-procedure TTMDBMovieProductionCompany.SetOrigin_Country(AValue: string);
+procedure TTMDBCompanyItem.SetOrigin_Country(AValue: string);
 begin
   if FOrigin_Country=AValue then Exit;
   FOrigin_Country:=AValue;
 end;
 
-procedure TTMDBMovieProductionCompany.SetID(AValue: Integer);
+procedure TTMDBCompanyItem.SetID(AValue: Integer);
 begin
   if FID=AValue then Exit;
   FID:=AValue;
 end;
 
-procedure TTMDBMovieProductionCompany.SetLogo_Path(AValue: string);
+procedure TTMDBCompanyItem.SetLogo_Path(AValue: string);
 begin
   if FLogo_Path=AValue then Exit;
   FLogo_Path:=AValue;
@@ -2527,7 +2492,7 @@ constructor TTMDBMovie.Create(aJSON: string);
 begin
   fBelongs_To_Collection:= TTMDBMovieCollection.Create;
   fGenres:= TCollection.Create(TTMDBGenreItem);
-  fProduction_Companies:= TCollection.Create(TTMDBMovieProductionCompany);
+  fProduction_Companies:= TCollection.Create(TTMDBCompanyItem);
   fProduction_Countries:= TCollection.Create(TTMDBMovieCountry);
   fSpoken_Languages:= TCollection.Create(TTMDBLanguageItem);
   fAlternative_Titles:= TTMDBMovieAlternativeTitles.Create;
