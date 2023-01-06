@@ -397,6 +397,7 @@ type
       FFile_Path: string;
       FFile_Type: string;
       FHeight: Integer;
+      FID: string;
       FISO_639_1: string;
       FVote_Average: Integer;
       FVote_Count: Integer;
@@ -405,6 +406,7 @@ type
       procedure SetFile_Path(AValue: string);
       procedure SetFile_Type(AValue: string);
       procedure SetHeight(AValue: Integer);
+      procedure SetID(AValue: string);
       procedure SetISO_639_1(AValue: string);
       procedure SetVote_Average(AValue: Integer);
       procedure SetVote_Count(AValue: Integer);
@@ -418,6 +420,7 @@ type
       property Vote_Average: Integer read FVote_Average write SetVote_Average;
       property Vote_Count: Integer read FVote_Count write SetVote_Count;
       property Width: Integer read FWidth write SetWidth;
+      property ID: string read FID write SetID;
   end;
 
   { TTMDBMovieImages }
@@ -1079,6 +1082,7 @@ type
       function MovieURL(aMovieID: string): string;
       function CompanyURL(aCompanyID: string): string;
       function PersonURL(aPersonID: string): string;
+      function NetworkURL(aNetworkID: string): string;
       function GetCountries: TCollectionJSONResponse;
       function GetJobs: TCollectionJSONResponse;
       function GetLanguages: TCollectionJSONResponse;
@@ -1106,6 +1110,7 @@ type
       function GetMovie(aMovieID: string): TCustomJSONResponse;
       function GetCompany(aCompanyID: string): TCustomJSONResponse;
       function GetPerson(aPersonID: string): TCustomJSONResponse;
+      function GetNetwork(aNetworkID: string): TCustomJSONResponse;
     end;
 
 implementation
@@ -1974,6 +1979,12 @@ procedure TTMDBImage.SetHeight(AValue: Integer);
 begin
   if FHeight=AValue then Exit;
   FHeight:=AValue;
+end;
+
+procedure TTMDBImage.SetID(AValue: string);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
 end;
 
 procedure TTMDBImage.SetISO_639_1(AValue: string);
@@ -2871,6 +2882,18 @@ begin
   end;
 end;
 
+function TTMDB.GetNetwork(aNetworkID: string): TCustomJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= DoRequest(NetworkURL(aNetworkID));
+    Result:= TTMDBCompany.Create(aRequest);
+  except
+    Result:= TTMDBCompanyError.Create;
+  end;
+end;
+
 
 function TTMDB.MovieURL(aMovieID: string): string;
 begin
@@ -2891,6 +2914,13 @@ begin
   Result:= TMDBBASEURL + TMDBVersionString[Version] + '/person/' + aPersonID + '?api_key='
            + APIKey + '&language=' + Language + '&include_image_language=en,null'
            + '&append_to_response=movie_credits,tv_credits,external_ids,images';
+end;
+
+function TTMDB.NetworkURL(aNetworkID: string): string;
+begin
+  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/network/' + aNetworkID + '?api_key='
+           + APIKey + '&language=' + Language + '&include_image_language=en,null'
+           + '&append_to_response=alternative_names,images';
 end;
 
 
