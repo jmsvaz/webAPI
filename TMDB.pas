@@ -24,6 +24,7 @@ type
   TTMDBMovieError = class(TTMDBAPIError);
   TTMDBCompanyError = class(TTMDBAPIError);
   TTMDBPersonError = class(TTMDBAPIError);
+  TTMDBSearchError = class(TTMDBAPIError);
 
   TTMDBAPICountriesError = class(TTMDBCollectionError);
   TTMDBAPIJobsError = class(TTMDBCollectionError);
@@ -610,9 +611,9 @@ type
       property Release_Dates: TTMDBMovieReleaseDates read fRelease_Dates;
   end;
 
-  { TTMDBParentCompany }
+  { TTMDBCompanyItem }
 
-  TTMDBParentCompany = class
+  TTMDBCompanyItem = class(TCollectionitem)
     private
       FID: Integer;
       FLogo_Path: string;
@@ -683,7 +684,7 @@ type
       FLogo_Path: string;
       FName: string;
       FOrigin_Country: string;
-      fParent_Company: TTMDBParentCompany;
+      fParent_Company: TTMDBCompanyItem;
       procedure SetDescription(AValue: string);
       procedure SetHeadquarters(AValue: string);
       procedure SetHomepage(AValue: string);
@@ -702,7 +703,7 @@ type
       property Logo_Path: string read FLogo_Path write SetLogo_Path;
       property Name: string read FName write SetName;
       property Origin_Country: string read FOrigin_Country write SetOrigin_Country;
-      property Parent_Company: TTMDBParentCompany read fParent_Company;
+      property Parent_Company: TTMDBCompanyItem read fParent_Company;
       property Images: TTMDBCompanyImages read fImages;
       property Alternative_Names: TTMDBCompanyAlternativeNames read fAlternative_Names;
   end;
@@ -1049,6 +1050,36 @@ type
       property TV_Credits: TTMDBPersonTVCredits read fTV_Credits;
   end;
 
+  { TTMDBSearchResult }
+
+  TTMDBSearchResult = class(TCustomJSONResponse)
+    private
+      FPage: Integer;
+      fResults: TCollection;
+      FTotal_Pages: Integer;
+      FTotal_Results: Integer;
+      procedure SetPage(AValue: Integer);
+      procedure SetTotal_Pages(AValue: Integer);
+      procedure SetTotal_Results(AValue: Integer);
+    protected
+      property Results: TCollection read fResults;
+    public
+      destructor Destroy; override;
+    published
+      property Page: Integer read FPage write SetPage;
+      property Total_Pages: Integer read FTotal_Pages write SetTotal_Pages;
+      property Total_Results: Integer read FTotal_Results write SetTotal_Results;
+  end;
+
+  { TTMDBSearchCompanyResult }
+
+  TTMDBSearchCompanyResult = class(TTMDBSearchResult)
+    public
+      constructor Create(aJSON: string = '');
+    published
+      property Results;
+  end;
+
   { TTMDB }
 
   TTMDB = class
@@ -1083,6 +1114,7 @@ type
       function CompanyURL(aCompanyID: string): string;
       function PersonURL(aPersonID: string): string;
       function NetworkURL(aNetworkID: string): string;
+      function SearchCompanyURL(aCompany: string; aPage: Integer = 1): string;
       function GetCountries: TCollectionJSONResponse;
       function GetJobs: TCollectionJSONResponse;
       function GetLanguages: TCollectionJSONResponse;
@@ -1111,6 +1143,7 @@ type
       function GetCompany(aCompanyID: string): TCustomJSONResponse;
       function GetPerson(aPersonID: string): TCustomJSONResponse;
       function GetNetwork(aNetworkID: string): TCustomJSONResponse;
+      function SearchCompany(aCompany: string; aPage: Integer = 1): TCustomJSONResponse;
     end;
 
 implementation
@@ -1120,6 +1153,40 @@ uses fphttpclient, Dialogs;
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBSearchCompanyResult }
+
+constructor TTMDBSearchCompanyResult.Create(aJSON: string);
+begin
+  fResults:= TCollection.Create(TTMDBCompanyItem);
+  inherited Create(aJSON);
+end;
+
+{ TTMDBSearchResult }
+
+procedure TTMDBSearchResult.SetPage(AValue: Integer);
+begin
+  if FPage=AValue then Exit;
+  FPage:=AValue;
+end;
+
+procedure TTMDBSearchResult.SetTotal_Pages(AValue: Integer);
+begin
+  if FTotal_Pages=AValue then Exit;
+  FTotal_Pages:=AValue;
+end;
+
+procedure TTMDBSearchResult.SetTotal_Results(AValue: Integer);
+begin
+  if FTotal_Results=AValue then Exit;
+  FTotal_Results:=AValue;
+end;
+
+destructor TTMDBSearchResult.Destroy;
+begin
+  fResults.Free;
+  inherited Destroy;
+end;
 
 { TTMDBPerson }
 
@@ -1754,21 +1821,21 @@ begin
   inherited Destroy;
 end;
 
-{ TTMDBParentCompany }
+{ TTMDBCompanyItem }
 
-procedure TTMDBParentCompany.SetID(AValue: Integer);
+procedure TTMDBCompanyItem.SetID(AValue: Integer);
 begin
   if FID=AValue then Exit;
   FID:=AValue;
 end;
 
-procedure TTMDBParentCompany.SetLogo_Path(AValue: string);
+procedure TTMDBCompanyItem.SetLogo_Path(AValue: string);
 begin
   if FLogo_Path=AValue then Exit;
   FLogo_Path:=AValue;
 end;
 
-procedure TTMDBParentCompany.SetName(AValue: string);
+procedure TTMDBCompanyItem.SetName(AValue: string);
 begin
   if FName=AValue then Exit;
   FName:=AValue;
@@ -1820,7 +1887,7 @@ end;
 
 constructor TTMDBCompany.Create(aJSON: string);
 begin
-  fParent_Company:= TTMDBParentCompany.Create;
+  fParent_Company:= TTMDBCompanyItem.Create(nil);
   fImages:= TTMDBCompanyImages.Create;
   fAlternative_Names:= TTMDBCompanyAlternativeNames.Create;
   inherited Create(aJSON);
@@ -2894,6 +2961,20 @@ begin
   end;
 end;
 
+function TTMDB.SearchCompany(aCompany: string; aPage: Integer
+  ): TCustomJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= DoRequest(SearchCompanyURL(aCompany,aPage));
+    Result:= TTMDBSearchCompanyResult.Create(aRequest);
+  except
+    Result:= TTMDBSearchError.Create;
+  end;
+
+end;
+
 
 function TTMDB.MovieURL(aMovieID: string): string;
 begin
@@ -2921,6 +3002,13 @@ begin
   Result:= TMDBBASEURL + TMDBVersionString[Version] + '/network/' + aNetworkID + '?api_key='
            + APIKey + '&language=' + Language + '&include_image_language=en,null'
            + '&append_to_response=alternative_names,images';
+end;
+
+function TTMDB.SearchCompanyURL(aCompany: string; aPage: Integer): string;
+begin
+  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/search/company' + '?api_key='
+           + APIKey + '&query=' + EncodeURLElement(aCompany) + '&page=' + IntToStr(aPage);
+  ShowMessage(Result);
 end;
 
 
