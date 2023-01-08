@@ -1120,6 +1120,43 @@ type
       property Results;
   end;
 
+  { TTMDBSearchPersonItem }
+
+  TTMDBSearchPersonItem = class(TCollectionitem)
+    private
+      FAdult: Boolean;
+      FGender: Integer;
+      FID: Integer;
+      FKnown_for_Department: string;
+      FName: string;
+      FPopularity: Double;
+      fProfile_Path: string;
+      procedure SetAdult(AValue: Boolean);
+      procedure SetGender(AValue: Integer);
+      procedure SetID(AValue: Integer);
+      procedure SetKnown_for_Department(AValue: string);
+      procedure SetName(AValue: string);
+      procedure SetPopularity(AValue: Double);
+      procedure SetProfile_Path(AValue: string);
+    published
+      property ID: Integer read FID write SetID;
+      property Name: string read FName write SetName;
+      property Popularity: Double read FPopularity write SetPopularity;
+      property Profile_Path: string read fProfile_Path write SetProfile_Path;
+      property Adult: Boolean read FAdult write SetAdult;
+      property Known_for_Department: string read FKnown_for_Department write SetKnown_for_Department;
+      property Gender: Integer read FGender write SetGender;
+  end;
+
+  { TTMDBSearchPersonResult }
+
+  TTMDBSearchPersonResult = class(TTMDBSearchResult)
+    public
+      constructor Create(aJSON: string = '');
+    published
+      property Results;
+  end;
+
   { TTMDB }
 
   TTMDB = class
@@ -1157,6 +1194,8 @@ type
       function SearchCompanyURL(aCompany: string; aPage: Integer = 1): string;
       function SearchMovieURL(aMovie: string; aPage: Integer = 1; aIncludeAdult: Boolean = False;
                               aRegion: string = ''; aYear: Integer = 0; aPrimaryReleaseYear: Integer = 0): string;
+      function SearchPersonURL(aPerson: string; aPage: Integer = 1; aIncludeAdult: Boolean = False;
+                              aRegion: string = ''): string;
       function GetCountries: TCollectionJSONResponse;
       function GetJobs: TCollectionJSONResponse;
       function GetLanguages: TCollectionJSONResponse;
@@ -1188,7 +1227,9 @@ type
       function SearchCompany(aCompany: string; aPage: Integer = 1): TCustomJSONResponse;
       function SearchMovie(aMovie: string; aPage: Integer = 1; aIncludeAdult: Boolean = False;
                            aRegion: string = ''; aYear: Integer = 0; aPrimaryReleaseYear: Integer = 0): TCustomJSONResponse;
-    end;
+      function SearchPerson(aPerson: string; aPage: Integer = 1; aIncludeAdult: Boolean = False;
+                           aRegion: string = ''): TCustomJSONResponse;
+  end;
 
 implementation
 
@@ -1197,6 +1238,58 @@ uses fphttpclient, Dialogs;
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBSearchPersonItem }
+
+procedure TTMDBSearchPersonItem.SetAdult(AValue: Boolean);
+begin
+  if FAdult=AValue then Exit;
+  FAdult:=AValue;
+end;
+
+procedure TTMDBSearchPersonItem.SetGender(AValue: Integer);
+begin
+  if FGender=AValue then Exit;
+  FGender:=AValue;
+end;
+
+procedure TTMDBSearchPersonItem.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBSearchPersonItem.SetKnown_for_Department(AValue: string);
+begin
+  if FKnown_for_Department=AValue then Exit;
+  FKnown_for_Department:=AValue;
+end;
+
+procedure TTMDBSearchPersonItem.SetName(AValue: string);
+begin
+  if FName=AValue then Exit;
+  FName:=AValue;
+end;
+
+procedure TTMDBSearchPersonItem.SetPopularity(AValue: Double);
+begin
+  if FPopularity=AValue then Exit;
+  FPopularity:=AValue;
+end;
+
+procedure TTMDBSearchPersonItem.SetProfile_Path(AValue: string);
+begin
+  if fProfile_Path=AValue then Exit;
+  fProfile_Path:=AValue;
+end;
+
+{ TTMDBSearchPersonResult }
+
+constructor TTMDBSearchPersonResult.Create(aJSON: string);
+begin
+fResults:= TCollection.Create(TTMDBSearchPersonItem);
+inherited Create(aJSON);
+end;
 
 { TTMDBSearchMovieItem }
 
@@ -1282,8 +1375,8 @@ end;
 
 constructor TTMDBSearchMovieResult.Create(aJSON: string);
 begin
-fResults:= TCollection.Create(TTMDBSearchMovieItem);
-inherited Create(aJSON);
+  fResults:= TCollection.Create(TTMDBSearchMovieItem);
+  inherited Create(aJSON);
 end;
 
 { TTMDBSearchCompanyResult }
@@ -3092,12 +3185,26 @@ function TTMDB.SearchMovie(aMovie: string; aPage: Integer;
 var
   aRequest: string;
 begin
-try
-  aRequest:= DoRequest(SearchMovieURL(aMovie,aPage,aIncludeAdult,aRegion,aYear,aPrimaryReleaseYear));
-  Result:= TTMDBSearchMovieResult.Create(aRequest);
-except
-  Result:= TTMDBSearchError.Create;
+  try
+    aRequest:= DoRequest(SearchMovieURL(aMovie,aPage,aIncludeAdult,aRegion,aYear,aPrimaryReleaseYear));
+    Result:= TTMDBSearchMovieResult.Create(aRequest);
+  except
+    Result:= TTMDBSearchError.Create;
+  end;
 end;
+
+function TTMDB.SearchPerson(aPerson: string; aPage: Integer;
+  aIncludeAdult: Boolean; aRegion: string): TCustomJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= DoRequest(SearchPersonURL(aPerson,aPage,aIncludeAdult,aRegion));
+    Result:= TTMDBSearchPersonResult.Create(aRequest);
+  except
+    Result:= TTMDBSearchError.Create;
+  end;
+
 end;
 
 
@@ -3151,6 +3258,19 @@ begin
     Result:= Result + '&year=' + EncodeURLElement(IntToStr(aYear));
   if aPrimaryReleaseYear > 0 then
     Result:= Result + '&primary_release_year=' + EncodeURLElement(IntToStr(aPrimaryReleaseYear));
+end;
+
+function TTMDB.SearchPersonURL(aPerson: string; aPage: Integer;
+  aIncludeAdult: Boolean; aRegion: string): string;
+begin
+Result:= TMDBBASEURL + TMDBVersionString[Version] + '/search/person' + '?api_key='
+         + APIKey + '&query=' + EncodeURLElement(aPerson) + '&page=' + IntToStr(aPage);
+if aIncludeAdult then
+  Result:= Result + '&include_adult=true'
+else
+  Result:= Result + '&include_adult=false';
+if ValidRegion(aRegion) then
+  Result:= Result + '&region=' + EncodeURLElement(aRegion);
 end;
 
 
