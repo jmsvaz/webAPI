@@ -84,6 +84,7 @@ type
   end;
 
 function ValidIMDBid(aID: string): Boolean;
+function ValidRegion(aRegion: string): Boolean;
 
 implementation
 
@@ -97,6 +98,19 @@ begin
   try
     regex.Expression:= 'tt\d{5,7}';
     Result:= regex.Exec(aID);
+  finally
+    regex.Free;
+  end;
+end;
+
+function ValidRegion(aRegion: string): Boolean;
+var
+  regex: TRegExpr;
+begin
+  regex:= TRegExpr.Create;
+  try
+    regex.Expression:= '^[A-Z]{2}$';
+    Result:= regex.Exec(aRegion);
   finally
     regex.Free;
   end;

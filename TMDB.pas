@@ -1065,6 +1065,61 @@ type
       property Results;
   end;
 
+  { TTMDBSearchMovieItem }
+
+  TTMDBSearchMovieItem = class(TCollectionitem)
+    private
+      FAdult: Boolean;
+      FBackdrop_Path: string;
+      FID: Integer;
+      FOriginal_Language: string;
+      FOriginal_Title: string;
+      FOverview: string;
+      FPopularity: Double;
+      FPoster_Path: string;
+      FRelease_Date: string;
+      FTitle: string;
+      FVideo: Boolean;
+      FVote_Average: Double;
+      FVote_Count: Integer;
+      procedure SetAdult(AValue: Boolean);
+      procedure SetBackdrop_Path(AValue: string);
+      procedure SetID(AValue: Integer);
+      procedure SetOriginal_Language(AValue: string);
+      procedure SetOriginal_Title(AValue: string);
+      procedure SetOverview(AValue: string);
+      procedure SetPopularity(AValue: Double);
+      procedure SetPoster_Path(AValue: string);
+      procedure SetRelease_Date(AValue: string);
+      procedure SetTitle(AValue: string);
+      procedure SetVideo(AValue: Boolean);
+      procedure SetVote_Average(AValue: Double);
+      procedure SetVote_Count(AValue: Integer);
+    published
+      property Adult: Boolean read FAdult write SetAdult;
+      property Backdrop_Path: string read FBackdrop_Path write SetBackdrop_Path;
+      property ID: Integer read FID write SetID;
+      property Original_Language: string read FOriginal_Language write SetOriginal_Language;
+      property Original_Title: string read FOriginal_Title write SetOriginal_Title;
+      property Overview: string read FOverview write SetOverview;
+      property Popularity: Double read FPopularity write SetPopularity;
+      property Poster_Path: string read FPoster_Path write SetPoster_Path;
+      property Release_Date: string read FRelease_Date write SetRelease_Date;
+      property Title: string read FTitle write SetTitle;
+      property Video: Boolean read FVideo write SetVideo;
+      property Vote_Average: Double read FVote_Average write SetVote_Average;
+      property Vote_Count: Integer read FVote_Count write SetVote_Count;
+  end;
+
+  { TTMDBSearchMovieResult }
+
+  TTMDBSearchMovieResult = class(TTMDBSearchResult)
+    public
+      constructor Create(aJSON: string = '');
+    published
+      property Results;
+  end;
+
   { TTMDB }
 
   TTMDB = class
@@ -1100,6 +1155,8 @@ type
       function PersonURL(aPersonID: string): string;
       function NetworkURL(aNetworkID: string): string;
       function SearchCompanyURL(aCompany: string; aPage: Integer = 1): string;
+      function SearchMovieURL(aMovie: string; aPage: Integer = 1; aIncludeAdult: Boolean = False;
+                              aRegion: string = ''; aYear: Integer = 0; aPrimaryReleaseYear: Integer = 0): string;
       function GetCountries: TCollectionJSONResponse;
       function GetJobs: TCollectionJSONResponse;
       function GetLanguages: TCollectionJSONResponse;
@@ -1129,6 +1186,8 @@ type
       function GetPerson(aPersonID: string): TCustomJSONResponse;
       function GetNetwork(aNetworkID: string): TCustomJSONResponse;
       function SearchCompany(aCompany: string; aPage: Integer = 1): TCustomJSONResponse;
+      function SearchMovie(aMovie: string; aPage: Integer = 1; aIncludeAdult: Boolean = False;
+                           aRegion: string = ''; aYear: Integer = 0; aPrimaryReleaseYear: Integer = 0): TCustomJSONResponse;
     end;
 
 implementation
@@ -1138,6 +1197,94 @@ uses fphttpclient, Dialogs;
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBSearchMovieItem }
+
+procedure TTMDBSearchMovieItem.SetAdult(AValue: Boolean);
+begin
+  if FAdult=AValue then Exit;
+  FAdult:=AValue;
+end;
+
+procedure TTMDBSearchMovieItem.SetBackdrop_Path(AValue: string);
+begin
+  if FBackdrop_Path=AValue then Exit;
+  FBackdrop_Path:=AValue;
+end;
+
+procedure TTMDBSearchMovieItem.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBSearchMovieItem.SetOriginal_Language(AValue: string);
+begin
+  if FOriginal_Language=AValue then Exit;
+  FOriginal_Language:=AValue;
+end;
+
+procedure TTMDBSearchMovieItem.SetOriginal_Title(AValue: string);
+begin
+  if FOriginal_Title=AValue then Exit;
+  FOriginal_Title:=AValue;
+end;
+
+procedure TTMDBSearchMovieItem.SetOverview(AValue: string);
+begin
+  if FOverview=AValue then Exit;
+  FOverview:=AValue;
+end;
+
+procedure TTMDBSearchMovieItem.SetPopularity(AValue: Double);
+begin
+  if FPopularity=AValue then Exit;
+  FPopularity:=AValue;
+end;
+
+procedure TTMDBSearchMovieItem.SetPoster_Path(AValue: string);
+begin
+  if FPoster_Path=AValue then Exit;
+  FPoster_Path:=AValue;
+end;
+
+procedure TTMDBSearchMovieItem.SetRelease_Date(AValue: string);
+begin
+  if FRelease_Date=AValue then Exit;
+  FRelease_Date:=AValue;
+end;
+
+procedure TTMDBSearchMovieItem.SetTitle(AValue: string);
+begin
+  if FTitle=AValue then Exit;
+  FTitle:=AValue;
+end;
+
+procedure TTMDBSearchMovieItem.SetVideo(AValue: Boolean);
+begin
+  if FVideo=AValue then Exit;
+  FVideo:=AValue;
+end;
+
+procedure TTMDBSearchMovieItem.SetVote_Average(AValue: Double);
+begin
+  if FVote_Average=AValue then Exit;
+  FVote_Average:=AValue;
+end;
+
+procedure TTMDBSearchMovieItem.SetVote_Count(AValue: Integer);
+begin
+  if FVote_Count=AValue then Exit;
+  FVote_Count:=AValue;
+end;
+
+{ TTMDBSearchMovieResult }
+
+constructor TTMDBSearchMovieResult.Create(aJSON: string);
+begin
+fResults:= TCollection.Create(TTMDBSearchMovieItem);
+inherited Create(aJSON);
+end;
 
 { TTMDBSearchCompanyResult }
 
@@ -2937,7 +3084,20 @@ begin
   except
     Result:= TTMDBSearchError.Create;
   end;
+end;
 
+function TTMDB.SearchMovie(aMovie: string; aPage: Integer;
+  aIncludeAdult: Boolean; aRegion: string; aYear: Integer;
+  aPrimaryReleaseYear: Integer): TCustomJSONResponse;
+var
+  aRequest: string;
+begin
+try
+  aRequest:= DoRequest(SearchMovieURL(aMovie,aPage,aIncludeAdult,aRegion,aYear,aPrimaryReleaseYear));
+  Result:= TTMDBSearchMovieResult.Create(aRequest);
+except
+  Result:= TTMDBSearchError.Create;
+end;
 end;
 
 
@@ -2973,7 +3133,24 @@ function TTMDB.SearchCompanyURL(aCompany: string; aPage: Integer): string;
 begin
   Result:= TMDBBASEURL + TMDBVersionString[Version] + '/search/company' + '?api_key='
            + APIKey + '&query=' + EncodeURLElement(aCompany) + '&page=' + IntToStr(aPage);
-  ShowMessage(Result);
+end;
+
+function TTMDB.SearchMovieURL(aMovie: string; aPage: Integer;
+  aIncludeAdult: Boolean; aRegion: string; aYear: Integer;
+  aPrimaryReleaseYear: Integer): string;
+begin
+  Result:= TMDBBASEURL + TMDBVersionString[Version] + '/search/movie' + '?api_key='
+           + APIKey + '&query=' + EncodeURLElement(aMovie) + '&page=' + IntToStr(aPage);
+  if aIncludeAdult then
+    Result:= Result + '&include_adult=true'
+  else
+    Result:= Result + '&include_adult=false';
+  if ValidRegion(aRegion) then
+    Result:= Result + '&region=' + EncodeURLElement(aRegion);
+  if aYear > 0 then
+    Result:= Result + '&year=' + EncodeURLElement(IntToStr(aYear));
+  if aPrimaryReleaseYear > 0 then
+    Result:= Result + '&primary_release_year=' + EncodeURLElement(IntToStr(aPrimaryReleaseYear));
 end;
 
 

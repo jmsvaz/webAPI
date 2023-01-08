@@ -96,6 +96,7 @@ begin
       cbSearchMethod.Items.Add('Person by TMDBid');
       cbSearchMethod.Items.Add('Network by TMDBid');
       cbSearchMethod.Items.Add('Search Company');
+      cbSearchMethod.Items.Add('Search Movie');
 
       cbSearchMethod.ItemIndex:= 0;
     end;
@@ -183,6 +184,8 @@ begin
           aResult:= aTMDBAPI.GetNetwork(edSearch.Text);
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Search Company' then
           aResult:= aTMDBAPI.SearchCompany(edSearch.Text);
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Search Movie' then
+          aResult:= aTMDBAPI.SearchMovie(edSearch.Text);
 
         if aResult is TTMDBConfiguration then
           mmResult.Append('Base_URL: ' + TTMDBConfiguration(aResult).Images.Base_URL);
@@ -239,6 +242,8 @@ begin
              mmResult.Append('Total resuls: ' + IntToStr(TTMDBSearchResult(aResult).Total_Results));
              if aResult is TTMDBSearchCompanyResult then
                mmResult.Append('Results: ' + intToStr(TTMDBSearchCompanyResult(aResult).Results.Count));
+             if aResult is TTMDBSearchMovieResult then
+               mmResult.Append('Results: ' + intToStr(TTMDBSearchMovieResult(aResult).Results.Count));
            end;
 
       end;
