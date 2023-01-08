@@ -95,6 +95,7 @@ begin
       cbSearchMethod.Items.Add('Company by TMDBid');
       cbSearchMethod.Items.Add('Person by TMDBid');
       cbSearchMethod.Items.Add('Network by TMDBid');
+      cbSearchMethod.Items.Add('Collection by TMDBid');
       cbSearchMethod.Items.Add('Search Company');
       cbSearchMethod.Items.Add('Search Movie');
       cbSearchMethod.Items.Add('Search Person');
@@ -184,6 +185,8 @@ begin
           aResult:= aTMDBAPI.GetPerson(edSearch.Text);
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Network by TMDBid' then
           aResult:= aTMDBAPI.GetNetwork(edSearch.Text);
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Collection by TMDBid' then
+          aResult:= aTMDBAPI.GetCollection(edSearch.Text);
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Search Company' then
           aResult:= aTMDBAPI.SearchCompany(edSearch.Text);
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Search Movie' then
@@ -239,6 +242,14 @@ begin
              mmResult.Append('TV Cast count: ' + IntToStr(TTMDBPerson(aResult).TV_Credits.Cast.Count));
              mmResult.Append('TV Crew count: ' + IntToStr(TTMDBPerson(aResult).TV_Credits.Crew.Count));
              mmResult.Append('IMDB ID: ' + TTMDBPerson(aResult).External_IDs.IMDB_ID);
+           end;
+
+         if aResult is TTMDBCollection then
+           begin
+             mmResult.Append('Collection: ' + TTMDBCollection(aResult).Name);
+             mmResult.Append('Posters count: ' + IntToStr(TTMDBCollection(aResult).Images.Posters.Count));
+             mmResult.Append('Backdrops count: ' + IntToStr(TTMDBCollection(aResult).Images.Backdrops.Count));
+             mmResult.Append('Movies count: ' + IntToStr(TTMDBCollection(aResult).Parts.Count));
            end;
 
          if aResult is TTMDBSearchResult then

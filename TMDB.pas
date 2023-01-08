@@ -16,7 +16,7 @@ type
   { TTMDBAPIError }
 
   TTMDBAPIError = class(TCustomJSONError);
-  TTMDBCollectionError = class(TCollectionJSONError);
+  TTMDBCollectionJSONError = class(TCollectionJSONError);
   TTMDBAPIMovieNotFoundError = class(TTMDBAPIError);
   TTMDBAPIIncorrectIMDbIDError = class(TTMDBAPIError);
   TTMDBAPIConfigurationError = class(TTMDBAPIError);
@@ -24,12 +24,13 @@ type
   TTMDBMovieError = class(TTMDBAPIError);
   TTMDBCompanyError = class(TTMDBAPIError);
   TTMDBPersonError = class(TTMDBAPIError);
+  TTMDBCollectionError = class(TTMDBAPIError);
   TTMDBSearchError = class(TTMDBAPIError);
 
-  TTMDBAPICountriesError = class(TTMDBCollectionError);
-  TTMDBAPIJobsError = class(TTMDBCollectionError);
-  TTMDBAPILanguagesError = class(TTMDBCollectionError);
-  TTMDBAPITimeZonesError = class(TTMDBCollectionError);
+  TTMDBAPICountriesError = class(TTMDBCollectionJSONError);
+  TTMDBAPIJobsError = class(TTMDBCollectionJSONError);
+  TTMDBAPILanguagesError = class(TTMDBCollectionJSONError);
+  TTMDBAPITimeZonesError = class(TTMDBCollectionJSONError);
   TTMDBAPIPrimaryTranslationsError = class(TStringsJSONError);
 
 
@@ -1035,6 +1036,34 @@ type
       property TV_Credits: TTMDBPersonTVCredits read fTV_Credits;
   end;
 
+
+  TTMDBCollection = class(TCustomJSONResponse)
+    private
+      FBackdrop_Path: string;
+      FID: Integer;
+      fImages: TTMDBMovieImages;
+      fName: string;
+      fOverview: string;
+      fParts: TCollection;
+      FPoster_Path: string;
+      procedure SetBackdrop_Path(AValue: string);
+      procedure SetID(AValue: Integer);
+      procedure SetName(AValue: string);
+      procedure SetOverview(AValue: string);
+      procedure SetPoster_Path(AValue: string);
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property ID: Integer read FID write SetID;
+      property Name: string read fName write SetName;
+      property Overview: string read fOverview write SetOverview;
+      property Poster_Path: string read FPoster_Path write SetPoster_Path;
+      property Backdrop_Path: string read FBackdrop_Path write SetBackdrop_Path;
+      property Parts: TCollection read fParts;
+      property Images: TTMDBMovieImages read fImages;
+  end;
+
   { TTMDBSearchResult }
 
   TTMDBSearchResult = class(TCustomJSONResponse)
@@ -1200,6 +1229,7 @@ type
       function CompanyURL(aCompanyID: string): string;
       function PersonURL(aPersonID: string): string;
       function NetworkURL(aNetworkID: string): string;
+      function CollectionURL(aCollectionID: string): string;
       function SearchCompanyURL(aCompany: string; aPage: Integer = 1): string;
       function SearchMovieURL(aMovie: string; aPage: Integer = 1; aIncludeAdult: Boolean = False;
                               aRegion: string = ''; aYear: Integer = 0; aPrimaryReleaseYear: Integer = 0): string;
@@ -1234,6 +1264,7 @@ type
       function GetCompany(aCompanyID: string): TCustomJSONResponse;
       function GetPerson(aPersonID: string): TCustomJSONResponse;
       function GetNetwork(aNetworkID: string): TCustomJSONResponse;
+      function GetCollection(aCollectionID: string): TCustomJSONResponse;
       function SearchCompany(aCompany: string; aPage: Integer = 1): TCustomJSONResponse;
       function SearchMovie(aMovie: string; aPage: Integer = 1; aIncludeAdult: Boolean = False;
                            aRegion: string = ''; aYear: Integer = 0; aPrimaryReleaseYear: Integer = 0): TCustomJSONResponse;
@@ -1249,6 +1280,52 @@ uses fphttpclient, Dialogs;
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBCollection }
+
+procedure TTMDBCollection.SetBackdrop_Path(AValue: string);
+begin
+  if FBackdrop_Path=AValue then Exit;
+  FBackdrop_Path:=AValue;
+end;
+
+procedure TTMDBCollection.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBCollection.SetName(AValue: string);
+begin
+  if fName=AValue then Exit;
+  fName:=AValue;
+end;
+
+procedure TTMDBCollection.SetOverview(AValue: string);
+begin
+  if fOverview=AValue then Exit;
+  fOverview:=AValue;
+end;
+
+procedure TTMDBCollection.SetPoster_Path(AValue: string);
+begin
+  if FPoster_Path=AValue then Exit;
+  FPoster_Path:=AValue;
+end;
+
+constructor TTMDBCollection.Create(aJSON: string);
+begin
+  fImages:= TTMDBMovieImages.Create;
+  fParts:= TCollection.Create(TTMDBSearchMovieItem);
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBCollection.Destroy;
+begin
+  fImages.Free;
+  fParts.Free;
+  inherited Destroy;
+end;
 
 { TTMDBSearchCollectionResult }
 
@@ -3185,6 +3262,18 @@ begin
   end;
 end;
 
+function TTMDB.GetCollection(aCollectionID: string): TCustomJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= DoRequest(CollectionURL(aCollectionID));
+    Result:= TTMDBCollection.Create(aRequest);
+  except
+    Result:= TTMDBCollectionError.Create;
+  end;
+end;
+
 function TTMDB.SearchCompany(aCompany: string; aPage: Integer
   ): TCustomJSONResponse;
 var
@@ -3265,6 +3354,13 @@ begin
   Result:= TMDBBASEURL + TMDBVersionString[Version] + '/network/' + aNetworkID + '?api_key='
            + APIKey + '&language=' + Language + '&include_image_language=en,null'
            + '&append_to_response=alternative_names,images';
+end;
+
+function TTMDB.CollectionURL(aCollectionID: string): string;
+begin
+Result:= TMDBBASEURL + TMDBVersionString[Version] + '/collection/' + aCollectionID + '?api_key='
+         + APIKey + '&language=' + Language + '&include_image_language=en,null'
+         + '&append_to_response=images';
 end;
 
 function TTMDB.SearchCompanyURL(aCompany: string; aPage: Integer): string;
