@@ -173,9 +173,9 @@ type
       property Genres: TCollection read fGenres;
   end;
 
-  { TTMDBMovieCollection }
+  { TTMDBCollectionItem }
 
-  TTMDBMovieCollection = class
+  TTMDBCollectionItem = class(TCollectionitem)
     private
       FBackdrop_Path: string;
       FID: Integer;
@@ -526,7 +526,7 @@ type
       FAdult: Boolean;
       fAlternative_Titles: TTMDBMovieAlternativeTitles;
       FBackdrop_Path: string;
-      fBelongs_To_Collection: TTMDBMovieCollection;
+      fBelongs_To_Collection: TTMDBCollectionItem;
       FBudget: Integer;
       fCredits: TTMDBMovieCredits;
       fExternal_IDs: TTMDBExternalIDs;
@@ -580,7 +580,7 @@ type
     published
       property Adult: Boolean read FAdult write SetAdult;
       property Backdrop_Path: string read FBackdrop_Path write SetBackdrop_Path;
-      property Belongs_to_Collection: TTMDBMovieCollection read fBelongs_To_Collection;
+      property Belongs_to_Collection: TTMDBCollectionItem read fBelongs_To_Collection;
       property Budget: Integer read FBudget write SetBudget;
       property Genres: TCollection read fGenres;
       property Homepage: string read FHomepage write SetHomepage;
@@ -1157,6 +1157,15 @@ type
       property Results;
   end;
 
+  { TTMDBSearchCollectionResult }
+
+  TTMDBSearchCollectionResult = class(TTMDBSearchResult)
+    public
+      constructor Create(aJSON: string = '');
+    published
+      property Results;
+  end;
+
   { TTMDB }
 
   TTMDB = class
@@ -1196,6 +1205,7 @@ type
                               aRegion: string = ''; aYear: Integer = 0; aPrimaryReleaseYear: Integer = 0): string;
       function SearchPersonURL(aPerson: string; aPage: Integer = 1; aIncludeAdult: Boolean = False;
                               aRegion: string = ''): string;
+      function SearchCollectionURL(aCollection: string; aPage: Integer = 1): string;
       function GetCountries: TCollectionJSONResponse;
       function GetJobs: TCollectionJSONResponse;
       function GetLanguages: TCollectionJSONResponse;
@@ -1229,6 +1239,7 @@ type
                            aRegion: string = ''; aYear: Integer = 0; aPrimaryReleaseYear: Integer = 0): TCustomJSONResponse;
       function SearchPerson(aPerson: string; aPage: Integer = 1; aIncludeAdult: Boolean = False;
                            aRegion: string = ''): TCustomJSONResponse;
+      function SearchCollection(aCollection: string; aPage: Integer = 1): TCustomJSONResponse;
   end;
 
 implementation
@@ -1238,6 +1249,14 @@ uses fphttpclient, Dialogs;
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBSearchCollectionResult }
+
+constructor TTMDBSearchCollectionResult.Create(aJSON: string);
+begin
+fResults:= TCollection.Create(TTMDBCollectionItem);
+inherited Create(aJSON);
+end;
 
 { TTMDBSearchPersonItem }
 
@@ -2538,27 +2557,27 @@ begin
   inherited Destroy;
 end;
 
-{ TTMDBMovieCollection }
+{ TTMDBCollectionItem }
 
-procedure TTMDBMovieCollection.SetName(AValue: string);
+procedure TTMDBCollectionItem.SetName(AValue: string);
 begin
   if FName=AValue then Exit;
   FName:=AValue;
 end;
 
-procedure TTMDBMovieCollection.SetPoster_Path(AValue: string);
+procedure TTMDBCollectionItem.SetPoster_Path(AValue: string);
 begin
   if FPoster_Path=AValue then Exit;
   FPoster_Path:=AValue;
 end;
 
-procedure TTMDBMovieCollection.SetID(AValue: Integer);
+procedure TTMDBCollectionItem.SetID(AValue: Integer);
 begin
   if FID=AValue then Exit;
   FID:=AValue;
 end;
 
-procedure TTMDBMovieCollection.SetBackdrop_Path(AValue: string);
+procedure TTMDBCollectionItem.SetBackdrop_Path(AValue: string);
 begin
   if FBackdrop_Path=AValue then Exit;
   FBackdrop_Path:=AValue;
@@ -2730,7 +2749,7 @@ end;
 
 constructor TTMDBMovie.Create(aJSON: string);
 begin
-  fBelongs_To_Collection:= TTMDBMovieCollection.Create;
+  fBelongs_To_Collection:= TTMDBCollectionItem.Create(nil);
   fGenres:= TCollection.Create(TTMDBGenreItem);
   fProduction_Companies:= TCollection.Create(TTMDBCompanyItem);
   fProduction_Countries:= TCollection.Create(TTMDBMovieCountry);
@@ -3204,7 +3223,19 @@ begin
   except
     Result:= TTMDBSearchError.Create;
   end;
+end;
 
+function TTMDB.SearchCollection(aCollection: string; aPage: Integer
+  ): TCustomJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= DoRequest(SearchCollectionURL(aCollection,aPage));
+    Result:= TTMDBSearchCollectionResult.Create(aRequest);
+  except
+    Result:= TTMDBSearchError.Create;
+  end;
 end;
 
 
@@ -3271,6 +3302,12 @@ else
   Result:= Result + '&include_adult=false';
 if ValidRegion(aRegion) then
   Result:= Result + '&region=' + EncodeURLElement(aRegion);
+end;
+
+function TTMDB.SearchCollectionURL(aCollection: string; aPage: Integer): string;
+begin
+Result:= TMDBBASEURL + TMDBVersionString[Version] + '/search/collection' + '?api_key='
+         + APIKey + '&query=' + EncodeURLElement(aCollection) + '&page=' + IntToStr(aPage);
 end;
 
 
