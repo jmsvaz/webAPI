@@ -26,6 +26,7 @@ type
   TTMDBPersonError = class(TTMDBAPIError);
   TTMDBCollectionError = class(TTMDBAPIError);
   TTMDBSearchError = class(TTMDBAPIError);
+  TTMDBRequestTokenError = class(TTMDBAPIError);
 
   TTMDBAPICountriesError = class(TTMDBCollectionJSONError);
   TTMDBAPIJobsError = class(TTMDBCollectionJSONError);
@@ -1195,6 +1196,35 @@ type
       property Results;
   end;
 
+  { TTMDBRequestToken }
+
+  TTMDBRequestToken = class(TCustomJSONResponse)
+    private
+      FExpires_At: string;
+      FRequest_Token: string;
+      FSuccess: Boolean;
+      procedure SetExpires_At(AValue: string);
+      procedure SetRequest_Token(AValue: string);
+      procedure SetSuccess(AValue: Boolean);
+    published
+      property Success: Boolean read FSuccess write SetSuccess;
+      property Expires_At: string read FExpires_At write SetExpires_At;
+      property Request_Token: string read FRequest_Token write SetRequest_Token;
+  end;
+
+  { TTMDBSessionID }
+
+  TTMDBSessionID = class(TCustomJSONResponse)
+    private
+      fSession_ID: string;
+      FSuccess: Boolean;
+      procedure SetSession_ID(AValue: string);
+      procedure SetSuccess(AValue: Boolean);
+    published
+      property Success: Boolean read FSuccess write SetSuccess;
+      property Session_ID: string read fSession_ID write SetSession_ID;
+  end;
+
   { TTMDB }
 
   TTMDB = class
@@ -1207,16 +1237,23 @@ type
       FLanguage: string;
       fLanguages: TTMDBLanguages;
       fMovieGenres: TTMDBGenreList;
+      fPassword: string;
       fPrimaryTranslations: TTMDBPrimaryTranslations;
       fTimeOut: Integer;
       fTimeZones: TTMDBTimeZones;
       fTVGenres: TTMDBGenreList;
+      fUserName: string;
       fVersion: TTMDBAPIVersion;
+      fSessionID: string;
       procedure SetAPIKey(AValue: string);
       procedure SetLanguage(AValue: string);
+      procedure SetPassword(AValue: string);
       procedure SetTimeOut(AValue: Integer);
+      procedure SetUserName(AValue: string);
       procedure SetVersion(AValue: TTMDBAPIVersion);
       function DoRequest(aURL: string): string;
+      function DoPost(aURL: string; aJSON: string): string;
+      function ValidSession: Boolean;
       function ConfigurationURL: string;
       function CountriesURL: string;
       function JobsURL: string;
@@ -1229,6 +1266,9 @@ type
       function CompanyURL(aCompanyID: string): string;
       function PersonURL(aPersonID: string): string;
       function NetworkURL(aNetworkID: string): string;
+      function RequestTokenURL: string;
+      function ValidateWithLoginURL: string;
+      function CreateSessionURL: string;
       function CollectionURL(aCollectionID: string): string;
       function SearchCompanyURL(aCompany: string; aPage: Integer = 1): string;
       function SearchMovieURL(aMovie: string; aPage: Integer = 1; aIncludeAdult: Boolean = False;
@@ -1244,11 +1284,18 @@ type
       function GetPrimaryTranslations: TStringsJSONResponse;
       function GetMovieGenres: TCustomJSONResponse;
       function GetTVGenres: TCustomJSONResponse;
+      function CreateRequestToken: string;
+      function ValidateRequestToken(aRequestToken: string): Boolean;
+      function CreateSession(aRequestToken: string): string;
     public
       constructor Create(aAPIKey: string = '');
       function UpdateConfiguration: boolean;
+      function Authenticate: boolean; overload;
+      function Authenticate (aUserName, aPassword: string): boolean; overload;
       property TimeOut: Integer read fTimeOut write SetTimeOut;
       property APIKey: string read fAPIKey write SetAPIKey;
+      property UserName: string read fUserName write SetUserName;
+      property Password: string read fPassword write SetPassword;
       property Version: TTMDBAPIVersion read fVersion write SetVersion;
       property Caption: string read aCaption;
       property Language: string read FLanguage write SetLanguage;
@@ -1280,6 +1327,40 @@ uses fphttpclient, Dialogs;
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBSessionID }
+
+procedure TTMDBSessionID.SetSession_ID(AValue: string);
+begin
+  if fSession_ID=AValue then Exit;
+  fSession_ID:=AValue;
+end;
+
+procedure TTMDBSessionID.SetSuccess(AValue: Boolean);
+begin
+  if FSuccess=AValue then Exit;
+  FSuccess:=AValue;
+end;
+
+{ TTMDBRequestToken }
+
+procedure TTMDBRequestToken.SetSuccess(AValue: Boolean);
+begin
+  if FSuccess=AValue then Exit;
+  FSuccess:=AValue;
+end;
+
+procedure TTMDBRequestToken.SetExpires_At(AValue: string);
+begin
+  if FExpires_At=AValue then Exit;
+  FExpires_At:=AValue;
+end;
+
+procedure TTMDBRequestToken.SetRequest_Token(AValue: string);
+begin
+  if FRequest_Token=AValue then Exit;
+  FRequest_Token:=AValue;
+end;
 
 { TTMDBCollection }
 
@@ -3025,6 +3106,7 @@ begin
   Language:= 'pt-BR';   //'en-US';
   APIKey:= aAPIKey;
   aCaption:= 'The Movie DB';
+  fSessionID:= EmptyStr;
 end;  
 
 procedure TTMDB.SetLanguage(AValue: string);
@@ -3033,10 +3115,22 @@ begin
   FLanguage:=AValue;
 end;
 
+procedure TTMDB.SetPassword(AValue: string);
+begin
+  if fPassword=AValue then Exit;
+  fPassword:=AValue;
+end;
+
 procedure TTMDB.SetTimeOut(AValue: Integer);
 begin
   if fTimeOut=AValue then Exit;
   fTimeOut:=AValue;
+end;
+
+procedure TTMDB.SetUserName(AValue: string);
+begin
+  if fUserName=AValue then Exit;
+  fUserName:=AValue;
 end;
 
 procedure TTMDB.SetVersion(AValue: TTMDBAPIVersion);
@@ -3068,6 +3162,25 @@ begin
   except
     Result:= False;
   end;
+end;
+
+function TTMDB.Authenticate: boolean;
+var
+  aRequestToken: string;
+begin
+  Result:= False;
+  aRequestToken:= CreateRequestToken;
+  if ValidateRequestToken(aRequestToken) then
+    fSessionID:= CreateSession(aRequestToken);
+  Result:= ValidSession;
+end;
+
+function TTMDB.Authenticate(aUserName, aPassword: string): boolean;
+begin
+  Result:= False;
+  UserName:= aUserName;
+  Password:= aPassword;
+  Result:= Authenticate;
 end;
 
 function TTMDB.GetConfiguration: TCustomJSONResponse;
@@ -3205,6 +3318,58 @@ begin
     Result:= TTMDBGenreList.Create(aRequest);
   except
     Result:= TTMDBGenreListError.Create;
+  end;
+end;
+
+function TTMDB.CreateRequestToken: string;
+var
+  aRequest: string;
+  Token: TTMDBRequestToken;
+begin
+  Result:= EmptyStr;
+  try
+    aRequest:= DoRequest(RequestTokenURL);
+    Token:= TTMDBRequestToken.Create(aRequest);
+    Result:= Token.Request_Token;
+  finally
+    Token.Free;
+  end;
+end;
+
+function TTMDB.ValidateRequestToken(aRequestToken: string): Boolean;
+var
+  aJSON: string;
+  aRequest: string;
+  Token: TTMDBRequestToken;
+begin
+  Result:= False;
+  aJSON:= '{"username": "' + UserName + '",' +
+           '"password": "' + Password + '",' +
+           '"request_token": "' + aRequestToken + '"}';
+  try
+    aRequest:= DoPost(ValidateWithLoginURL,aJSON);
+    Token:= TTMDBRequestToken.Create(aRequest);
+    Result:= Token.Success;
+  finally
+    Token.Free;
+  end;
+end;
+
+function TTMDB.CreateSession(aRequestToken: string): string;
+var
+  aJSON: string;
+  aRequest: string;
+  Session: TTMDBSessionID;
+begin
+  Result:= EmptyStr;
+  aJSON:= '{"request_token": "' + aRequestToken + '"}';
+  try
+    aRequest:= DoPost(CreateSessionURL,aJSON);
+    Session:= TTMDBSessionID.Create(aRequest);
+    if Session.Success then
+      Result:= Session.Session_ID;
+  finally
+    Session.Free;
   end;
 end;
 
@@ -3356,6 +3521,24 @@ begin
            + '&append_to_response=alternative_names,images';
 end;
 
+function TTMDB.RequestTokenURL: string;
+begin
+Result:= TMDBBASEURL + TMDBVersionString[Version] + '/authentication/token/new'
+         + '?api_key=' + APIKey;
+end;
+
+function TTMDB.ValidateWithLoginURL: string;
+begin
+Result:= TMDBBASEURL + TMDBVersionString[Version] + '/authentication/token/validate_with_login'
+         + '?api_key=' + APIKey;
+end;
+
+function TTMDB.CreateSessionURL: string;
+begin
+Result:= TMDBBASEURL + TMDBVersionString[Version] + '/authentication/session/new'
+         + '?api_key=' + APIKey;
+end;
+
 function TTMDB.CollectionURL(aCollectionID: string): string;
 begin
 Result:= TMDBBASEURL + TMDBVersionString[Version] + '/collection/' + aCollectionID + '?api_key='
@@ -3415,13 +3598,39 @@ begin
   httpClient := TFPHTTPClient.Create(nil);
   try
     httpClient.AddHeader('Accept','application/json');
-    httpClient.AddHeader('Content-Type','application/json');
+    httpClient.AddHeader('Content-Type','application/json;charset=utf-8');
+    httpClient.AllowRedirect:= True;
     httpClient.IOTimeout:= Timeout;
     aResult:= httpClient.Get(aURL);
   finally
     httpClient.Free;
   end;
   Result:= aResult;
+end;
+
+function TTMDB.DoPost(aURL: string; aJSON: string): string;
+var
+  httpClient : TFPHTTPClient;
+  aResult: string;
+begin
+  httpClient := TFPHTTPClient.Create(nil);
+  try
+    httpClient.AddHeader('Accept','application/json');
+    httpClient.AddHeader('Content-Type','application/json;charset=utf-8');
+    httpClient.AllowRedirect:= True;
+    httpClient.IOTimeout:= Timeout;
+    httpClient.RequestBody := TRawByteStringStream.Create(aJSON);
+    aResult:= httpClient.Post(aURL);
+  finally
+    httpClient.RequestBody.Free;
+    httpClient.Free;
+  end;
+  Result:= aResult;
+end;
+
+function TTMDB.ValidSession: Boolean;
+begin
+  Result:= (fSessionID <> EmptyStr);
 end;
 
 

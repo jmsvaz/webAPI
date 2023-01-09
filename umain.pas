@@ -40,12 +40,16 @@ const
 
 {$R *.lfm}
 
+// procedure TFPCustomHTTPClient.Get(const AURL: String; const LocalFileName: String);
+
 { TfmWebQuery }
 
 procedure TfmWebQuery.FormCreate(Sender: TObject);
 begin
   aOMDBAPI:= TOMDB.Create(OMDB_API_KEY);
   aTMDBAPI:= TTMDB.Create(TMDB_API_KEY);
+  aTMDBAPI.UserName:= TMDB_USERNAME;
+  aTMDBAPI.Password:= TMDB_PASSWORD;
 
   cbSearchAPI.Items.Add(aOMDBAPI.Caption);
   cbSearchAPI.Items.Add(aTMDBAPI.Caption);
