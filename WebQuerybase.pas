@@ -9,6 +9,21 @@ uses
 
 type
 
+  EHTTPError = class(Exception);
+  E400BadRequestError = class(EHTTPError);
+  E401UnauthorizedError = class(EHTTPError);
+  E403ForbiddenError = class(EHTTPError);
+  E404NotFoundError = class(EHTTPError);
+
+resourcestring
+  sEHTTPError = 'Unknow HTTP Error';
+  sE400BadRequestError = 'Bad Request';
+  sE401UnauthorizedError = 'Unauthorized';
+  sE403ForbiddenError = 'Forbidden';
+  sE404NotFoundError = 'Not Found';
+
+type
+
 { TCustomJSONResponse }
 
   TCustomJSONResponse = class(TPersistent)

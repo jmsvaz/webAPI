@@ -3595,6 +3595,7 @@ var
   httpClient : TFPHTTPClient;
   aResult: string;
 begin
+  aResult:= EmptyStr;
   httpClient := TFPHTTPClient.Create(nil);
   try
     httpClient.AddHeader('Accept','application/json');
@@ -3602,6 +3603,13 @@ begin
     httpClient.AllowRedirect:= True;
     httpClient.IOTimeout:= Timeout;
     aResult:= httpClient.Get(aURL);
+    if httpClient.ResponseStatusCode <> 200 then
+      case httpClient.ResponseStatusCode of
+        401: raise E401UnauthorizedError.Create(sE401UnauthorizedError);
+        404: raise E404NotFoundError.Create(sE404NotFoundError);
+      else
+        raise EHTTPError.Create(sEHTTPError);
+      end;
   finally
     httpClient.Free;
   end;
