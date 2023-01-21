@@ -5,7 +5,7 @@ unit WebQuerybase;
 interface
 
 uses
-  Classes, SysUtils, fpJSON;
+  Classes, SysUtils, fpJSON, fgl;
 
 type
 
@@ -97,6 +97,8 @@ type
     published
       property Error: string read fError write SetError;
   end;
+
+  TIntegerList = specialize TFPGList<Integer>;
 
 function ValidIMDBid(aID: string): Boolean;
 function ValidRegion(aRegion: string): Boolean;

@@ -96,6 +96,7 @@ begin
       cbSearchMethod.Items.Add('Movie Genres');
       cbSearchMethod.Items.Add('TV Genres');
       cbSearchMethod.Items.Add('Movie by TMDBid');
+      cbSearchMethod.Items.Add('TV Show by TMDBid');
       cbSearchMethod.Items.Add('Company by TMDBid');
       cbSearchMethod.Items.Add('Person by TMDBid');
       cbSearchMethod.Items.Add('Network by TMDBid');
@@ -183,6 +184,8 @@ begin
           aResult:= aTMDBAPI.TVGenres;
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Movie by TMDBid' then
           aResult:= aTMDBAPI.GetMovie(edSearch.Text);
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'TV Show by TMDBid' then
+          aResult:= aTMDBAPI.GetTVShow(edSearch.Text);
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Company by TMDBid' then
           aResult:= aTMDBAPI.GetCompany(edSearch.Text);
         if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Person by TMDBid' then
@@ -226,6 +229,21 @@ begin
             mmResult.Append('Backdrops count: ' + IntToStr(TTMDBMovie(aResult).Images.Backdrops.Count));
             mmResult.Append('Keywords count: ' + IntToStr(TTMDBMovie(aResult).Keywords.Keywords.Count));
             mmResult.Append('Release dates count: ' + IntToStr(TTMDBMovie(aResult).Release_Dates.Results.Count));
+          end;
+
+        if aResult is TTMDBTVShow then
+          begin
+            mmResult.Append('TV Show: ' + TTMDBTVShow(aResult).Name + ' (' + TTMDBTVShow(aResult).Original_Name +')');
+            mmResult.Append('Seasons count: ' + IntToStr(TTMDBTVShow(aResult).Number_of_Seasons) + ' (' + IntToStr(TTMDBTVShow(aResult).Seasons.Count) + ')');
+//            mmResult.Append('Episode count: ' + IntToStr(TTMDBTVShow(aResult).Episode_Run_Time.Count));
+            mmResult.Append('Credits count: ' + IntToStr(TTMDBTVShow(aResult).Created_By.Count));
+            mmResult.Append('Alternative Titles count: ' + IntToStr(TTMDBTVShow(aResult).Alternative_Titles.Results.Count));
+            mmResult.Append('Cast count: ' + IntToStr(TTMDBTVShow(aResult).Aggregate_Credits.Cast.Count));
+            mmResult.Append('Crew count: ' + IntToStr(TTMDBTVShow(aResult).Aggregate_Credits.Crew.Count));
+            mmResult.Append('IMDB ID: ' + TTMDBTVShow(aResult).External_IDs.IMDB_ID);
+            mmResult.Append('Posters count: ' + IntToStr(TTMDBTVShow(aResult).Images.Posters.Count));
+            mmResult.Append('Backdrops count: ' + IntToStr(TTMDBTVShow(aResult).Images.Backdrops.Count));
+            mmResult.Append('Keywords count: ' + IntToStr(TTMDBTVShow(aResult).Keywords.Results.Count));
           end;
 
          if aResult is TTMDBCompany then

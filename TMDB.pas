@@ -25,6 +25,7 @@ type
   TTMDBCompanyError = class(TTMDBAPIError);
   TTMDBPersonError = class(TTMDBAPIError);
   TTMDBCollectionError = class(TTMDBAPIError);
+  TTMDBTVShowError = class(TTMDBAPIError);
   TTMDBSearchError = class(TTMDBAPIError);
   TTMDBRequestTokenError = class(TTMDBAPIError);
 
@@ -227,9 +228,9 @@ type
       property Name: string read FName write SetName;
   end;
 
-  { TTMDBMovieTitleItem }
+  { TTMDBTitleItem }
 
-  TTMDBMovieTitleItem = class(TCollectionitem)
+  TTMDBTitleItem = class(TCollectionitem)
     private
       FISO_3166_1: string;
       FTitle: string;
@@ -368,6 +369,7 @@ type
       FID: Integer;
       FIMDB_ID: string;
       FInstagram_ID: string;
+      FTVDB_ID: string;
       FTVRage_ID: string;
       FTwitter_ID: string;
       FWikidata_ID: string;
@@ -377,17 +379,19 @@ type
       procedure SetID(AValue: Integer);
       procedure SetIMDB_ID(AValue: string);
       procedure SetInstagram_ID(AValue: string);
+      procedure SetTVDB_ID(AValue: string);
       procedure SetTVRage_ID(AValue: string);
       procedure SetTwitter_ID(AValue: string);
       procedure SetWikidata_ID(AValue: string);
     published
       property ID: Integer read FID write SetID;
       property IMDB_ID: string read FIMDB_ID write SetIMDB_ID;
-      property Facebook_ID: string read FFacebook_ID write SetFacebook_ID;
       property Instagram_ID: string read FInstagram_ID write SetInstagram_ID;
-      property Twitter_ID: string read FTwitter_ID write SetTwitter_ID;
+      property Facebook_ID: string read FFacebook_ID write SetFacebook_ID;
       property Freebase_MID: string read FFreebase_MID write SetFreebase_MID;
       property Freebase_ID: string read FFreebase_ID write SetFreebase_ID;
+      property Twitter_ID: string read FTwitter_ID write SetTwitter_ID;
+      property TVDB_ID: string read FTVDB_ID write SetTVDB_ID;
       property TVRage_ID: string read FTVRage_ID write SetTVRage_ID;
       property Wikidata_ID: string read FWikidata_ID write SetWikidata_ID;
   end;
@@ -426,9 +430,9 @@ type
       property ID: string read FID write SetID;
   end;
 
-  { TTMDBMovieImages }
+  { TTMDBMediaImages }
 
-  TTMDBMovieImages = class(TCustomJSONResponse)
+  TTMDBMediaImages = class(TCustomJSONResponse)
     private
       fBackdrops: TCollection;
       FID: Integer;
@@ -535,7 +539,7 @@ type
       fGenres: TCollection;
       FHomepage: string;
       FID: Integer;
-      fImages: TTMDBMovieImages;
+      fImages: TTMDBMediaImages;
       FIMDB_ID: string;
       fKeywords: TTMDBMovieKeywords;
       FOriginal_Language: string;
@@ -608,7 +612,7 @@ type
       property Alternative_Titles: TTMDBMovieAlternativeTitles read fAlternative_Titles;
       property Credits: TTMDBMovieCredits read fCredits;
       property External_IDs: TTMDBExternalIDs read fExternal_IDs;
-      property Images: TTMDBMovieImages read fImages;
+      property Images: TTMDBMediaImages read fImages;
       property Keywords: TTMDBMovieKeywords read fKeywords;
       property Release_Dates: TTMDBMovieReleaseDates read fRelease_Dates;
   end;
@@ -750,12 +754,12 @@ type
       constructor Create(ACollection: TCollection); override;
       destructor Destroy; override;
     published
+      property Adult: string read FAdult write SetAdult;
       property Character: string read FCharacter write SetCharacter;
       property Credit_ID: string read FCredit_ID write SetCredit_ID;
       property Release_Date: string read FRelease_Date write SetRelease_Date;
       property Vote_Count: Integer read FVote_Count write SetVote_Count;
       property Video: boolean read FVideo write SetVideo;
-      property Adult: string read FAdult write SetAdult;
       property Vote_Average: Double read FVote_Average write SetVote_Average;
       property Title: string read FTitle write SetTitle;
 //      property Genre_IDs: TStrings read fGenre_IDs;  // TODO: discover how to get an array[integer]
@@ -810,11 +814,11 @@ type
       constructor Create(ACollection: TCollection); override;
       destructor Destroy; override;
     published
+      property Adult: string read FAdult write SetAdult;
       property Credit_ID: string read FCredit_ID write SetCredit_ID;
       property Release_Date: string read FRelease_Date write SetRelease_Date;
       property Vote_Count: Integer read FVote_Count write SetVote_Count;
       property Video: boolean read FVideo write SetVideo;
-      property Adult: string read FAdult write SetAdult;
       property Vote_Average: Double read FVote_Average write SetVote_Average;
       property Title: string read FTitle write SetTitle;
 //      property Genre_IDs: TStrings read fGenre_IDs;
@@ -1042,7 +1046,7 @@ type
     private
       FBackdrop_Path: string;
       FID: Integer;
-      fImages: TTMDBMovieImages;
+      fImages: TTMDBMediaImages;
       fName: string;
       fOverview: string;
       fParts: TCollection;
@@ -1062,8 +1066,358 @@ type
       property Poster_Path: string read FPoster_Path write SetPoster_Path;
       property Backdrop_Path: string read FBackdrop_Path write SetBackdrop_Path;
       property Parts: TCollection read fParts;
-      property Images: TTMDBMovieImages read fImages;
+      property Images: TTMDBMediaImages read fImages;
   end;
+
+  { TTMDBSeasonItem }
+
+  TTMDBSeasonItem = class(TCollectionitem)
+    private
+      FAir_Date: string;
+      FEpisode_Count: Integer;
+      FID: Integer;
+      FName: string;
+      FOverview: string;
+      FPoster_Path: string;
+      FSeason_Number: Integer;
+      procedure SetAir_Date(AValue: string);
+      procedure SetEpisode_Count(AValue: Integer);
+      procedure SetID(AValue: Integer);
+      procedure SetName(AValue: string);
+      procedure SetOverview(AValue: string);
+      procedure SetPoster_Path(AValue: string);
+      procedure SetSeason_Number(AValue: Integer);
+    published
+      property Air_Date: string read FAir_Date write SetAir_Date;
+      property Episode_Count: Integer read FEpisode_Count write SetEpisode_Count;
+      property ID: Integer read FID write SetID;
+      property Name: string read FName write SetName;
+      property Overview: string read FOverview write SetOverview;
+      property Poster_Path: string read FPoster_Path write SetPoster_Path;
+      property Season_Number: Integer read FSeason_Number write SetSeason_Number;
+    end;
+
+  { TTMDBTVShowKeywords }
+
+  TTMDBTVShowKeywords = class(TCustomJSONResponse)
+    private
+      FID: Integer;
+      fKeywords: TCollection;
+      procedure SetID(AValue: Integer);
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property ID: Integer read FID write SetID;
+      property Results: TCollection read fKeywords;
+  end;
+
+  { TTMDBTVShowCreatedByItem }
+
+  TTMDBTVShowCreatedByItem = class(TCollectionitem)
+    private
+      FCredit_ID: string;
+      FGender: Integer;
+      FID: Integer;
+      FName: string;
+      FProfile_Path: string;
+      procedure SetCredit_ID(AValue: string);
+      procedure SetGender(AValue: Integer);
+      procedure SetID(AValue: Integer);
+      procedure SetName(AValue: string);
+      procedure SetProfile_Path(AValue: string);
+    published
+      property ID: Integer read FID write SetID;
+      property Credit_ID: string read FCredit_ID write SetCredit_ID;
+      property Name: string read FName write SetName;
+      property Gender: Integer read FGender write SetGender;
+      property Profile_Path: string read FProfile_Path write SetProfile_Path;
+  end;
+
+  { TTMDBAiredEpisode }
+
+  TTMDBAiredEpisode = class
+    private
+      FAir_Date: string;
+      FEpisode_Number: Integer;
+      FID: Integer;
+      FName: string;
+      FOverview: string;
+      FProduction_Code: string;
+      FSession_Number: Integer;
+      FStill_Path: string;
+      FVote_Average: Double;
+      FVote_Count: Integer;
+      procedure SetAir_Date(AValue: string);
+      procedure SetEpisode_Number(AValue: Integer);
+      procedure SetID(AValue: Integer);
+      procedure SetName(AValue: string);
+      procedure SetOverview(AValue: string);
+      procedure SetProduction_Code(AValue: string);
+      procedure SetSession_Number(AValue: Integer);
+      procedure SetStill_Path(AValue: string);
+      procedure SetVote_Average(AValue: Double);
+      procedure SetVote_Count(AValue: Integer);
+    published
+      property Air_Date: string read FAir_Date write SetAir_Date;
+      property Episode_Number: Integer read FEpisode_Number write SetEpisode_Number;
+      property ID: Integer read FID write SetID;
+      property Name: string read FName write SetName;
+      property Overview: string read FOverview write SetOverview;
+      property Production_Code: string read FProduction_Code write SetProduction_Code;
+      property Session_Number: Integer read FSession_Number write SetSession_Number;
+      property Still_Path: string read FStill_Path write SetStill_Path;
+      property Vote_Average: Double read FVote_Average write SetVote_Average;
+      property Vote_Count: Integer read FVote_Count write SetVote_Count;
+  end;
+
+  { TTMDBTVShowAlternativeTitles }
+
+  TTMDBTVShowAlternativeTitles = class(TCustomJSONResponse)
+    private
+      FID: Integer;
+      fResults: TCollection;
+      procedure SetID(AValue: Integer);
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property Results: TCollection read fResults;
+      property ID: Integer read FID write SetID;
+  end;
+
+  { TTMDBTVShowRoleItem }
+
+  TTMDBTVShowRoleItem = class(TCollectionitem)
+    private
+      fCharacter: string;
+      FCredit_ID: string;
+      FEpisode_Count: Integer;
+      procedure SetCharacter(AValue: string);
+      procedure SetCredit_ID(AValue: string);
+      procedure SetEpisode_Count(AValue: Integer);
+    published
+      property Credit_ID: string read FCredit_ID write SetCredit_ID;
+      property Character: string read fCharacter write SetCharacter;
+      property Episode_Count: Integer read FEpisode_Count write SetEpisode_Count;
+  end;
+
+  { TTMDBTVShowCastItem }
+
+  TTMDBTVShowCastItem = class(TCollectionitem)
+    private
+      FAdult: string;
+      FGender: Integer;
+      FID: Integer;
+      FKnown_for_Department: string;
+      FName: string;
+      FOrder: Integer;
+      FOriginal_Name: string;
+      FPopularity: Double;
+      FProfile_Path: string;
+      fRoles: TCollection;
+      FTotal_Episode_Count: Integer;
+      procedure SetAdult(AValue: string);
+      procedure SetGender(AValue: Integer);
+      procedure SetID(AValue: Integer);
+      procedure SetKnown_for_Department(AValue: string);
+      procedure SetName(AValue: string);
+      procedure SetOrder(AValue: Integer);
+      procedure SetOriginal_Name(AValue: string);
+      procedure SetPopularity(AValue: Double);
+      procedure SetProfile_Path(AValue: string);
+      procedure SetTotal_Episode_Count(AValue: Integer);
+    public
+      constructor Create(ACollection: TCollection); override;
+      destructor Destroy; override;
+    published
+      property Adult: string read FAdult write SetAdult;
+      property Gender: Integer read FGender write SetGender;
+      property ID: Integer read FID write SetID;
+      property Known_for_Department: string read FKnown_for_Department write SetKnown_for_Department;
+      property Name: string read FName write SetName;
+      property Original_Name: string read FOriginal_Name write SetOriginal_Name;
+      property Popularity: Double read FPopularity write SetPopularity;
+      property Profile_Path: string read FProfile_Path write SetProfile_Path;
+      property Roles: TCollection read fRoles;
+      property Total_Episode_Count: Integer read FTotal_Episode_Count write SetTotal_Episode_Count;
+      property Order: Integer read FOrder write SetOrder;
+  end;
+
+  { TTMDBTVShowJobItem }
+
+  TTMDBTVShowJobItem = class(TCollectionitem)
+    private
+      FCredit_ID: string;
+      FEpisode_Count: Integer;
+      FJob: string;
+      procedure SetCredit_ID(AValue: string);
+      procedure SetEpisode_Count(AValue: Integer);
+      procedure SetJob(AValue: string);
+    published
+      property Credit_ID: string read FCredit_ID write SetCredit_ID;
+      property Job: string read FJob write SetJob;
+      property Episode_Count: Integer read FEpisode_Count write SetEpisode_Count;
+  end;
+
+  { TTMDBTVShowCrewItem }
+
+  TTMDBTVShowCrewItem = class(TCollectionitem)
+    private
+      FAdult: string;
+      FDepartment: string;
+      FGender: Integer;
+      FID: Integer;
+      fJobs: TCollection;
+      FKnown_for_Department: string;
+      FName: string;
+      FOriginal_Name: string;
+      FPopularity: Double;
+      FProfile_Path: string;
+      FTotal_Episode_Count: Integer;
+      procedure SetAdult(AValue: string);
+      procedure SetDepartment(AValue: string);
+      procedure SetGender(AValue: Integer);
+      procedure SetID(AValue: Integer);
+      procedure SetKnown_for_Department(AValue: string);
+      procedure SetName(AValue: string);
+      procedure SetOriginal_Name(AValue: string);
+      procedure SetPopularity(AValue: Double);
+      procedure SetProfile_Path(AValue: string);
+      procedure SetTotal_Episode_Count(AValue: Integer);
+    public
+      constructor Create(ACollection: TCollection); override;
+      destructor Destroy; override;
+    published
+      property Adult: string read FAdult write SetAdult;
+      property Gender: Integer read FGender write SetGender;
+      property ID: Integer read FID write SetID;
+      property Known_for_Department: string read FKnown_for_Department write SetKnown_for_Department;
+      property Name: string read FName write SetName;
+      property Original_Name: string read FOriginal_Name write SetOriginal_Name;
+      property Popularity: Double read FPopularity write SetPopularity;
+      property Profile_Path: string read FProfile_Path write SetProfile_Path;
+      property Jobs: TCollection read fJobs;
+      property Department: string read FDepartment write SetDepartment;
+      property Total_Episode_Count: Integer read FTotal_Episode_Count write SetTotal_Episode_Count;
+  end;
+
+  { TTMDBTVShowCredits }
+
+  TTMDBTVShowCredits = class(TCustomJSONResponse)
+    private
+      fCast: TCollection;
+      fCrew: TCollection;
+      FID: Integer;
+      procedure SetID(AValue: Integer);
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property Cast: TCollection read fCast;
+      property Crew: TCollection read fCrew;
+      property ID: Integer read FID write SetID;
+  end;
+
+  { TTMDBTVShow }
+
+  TTMDBTVShow  = class(TCustomJSONResponse)
+    private
+      fAggregate_Credits: TTMDBTVShowCredits;
+      fAlternative_Titles: TTMDBTVShowAlternativeTitles;
+      FBackdrop_Path: string;
+      fCreated_By: TCollection;
+      FEpisode_Run_Time: TIntegerList;
+      fExternal_IDs: TTMDBExternalIDs;
+      FFirst_Air_Date: string;
+      fGenres: TCollection;
+      FHomepage: string;
+      FID: Integer;
+      fImages: TTMDBMediaImages;
+      FIn_Production: Boolean;
+      fKeywords: TTMDBTVShowKeywords;
+      fLanguages: TStrings;
+      FLast_Air_Date: string;
+      fLast_Episode_To_Air: TTMDBAiredEpisode;
+      fName: string;
+      fNetworks: TCollection;
+      fNext_Episode_To_Air: TTMDBAiredEpisode;
+      FNumber_of_Episodes: Integer;
+      FNumber_of_Seasons: Integer;
+      FOriginal_Language: string;
+      fOriginal_Name: string;
+      fOrigin_Country: TStrings;
+      FOverview: string;
+      FPopularity: Double;
+      FPoster_Path: string;
+      fProduction_Companies: TCollection;
+      fProduction_Countries: TCollection;
+      fSeasons: TCollection;
+      fSpoken_Languages: TCollection;
+      FStatus: string;
+      FTagline: string;
+      FVote_Average: Double;
+      FVote_Count: Integer;
+      procedure SetBackdrop_Path(AValue: string);
+      procedure SetEpisode_Run_Time(AValue: TIntegerList);
+      procedure SetFirst_Air_Date(AValue: string);
+      procedure SetHomepage(AValue: string);
+      procedure SetID(AValue: Integer);
+      procedure SetIn_Production(AValue: Boolean);
+      procedure SetLast_Air_Date(AValue: string);
+      procedure SetName(AValue: string);
+      procedure SetNumber_of_Episodes(AValue: Integer);
+      procedure SetNumber_of_Seasons(AValue: Integer);
+      procedure SetOriginal_Language(AValue: string);
+      procedure SetOriginal_Name(AValue: string);
+      procedure SetOverview(AValue: string);
+      procedure SetPopularity(AValue: Double);
+      procedure SetPoster_Path(AValue: string);
+      procedure SetStatus(AValue: string);
+      procedure SetTagline(AValue: string);
+      procedure SetVote_Average(AValue: Double);
+      procedure SetVote_Count(AValue: Integer);
+    public
+      constructor Create(aJSON: string = '');
+      destructor Destroy; override;
+    published
+      property Backdrop_Path: string read FBackdrop_Path write SetBackdrop_Path;
+      property Created_By: TCollection read fCreated_By;
+//      property Episode_Run_Time: TIntegerList read FEpisode_Run_Time write SetEpisode_Run_Time;
+      property First_Air_Date: string read FFirst_Air_Date write SetFirst_Air_Date;
+      property Genres: TCollection read fGenres;
+      property Homepage: string read FHomepage write SetHomepage;
+      property ID: Integer read FID write SetID; 
+      property In_Production: Boolean read FIn_Production write SetIn_Production;
+      property Languages: TStrings read fLanguages;
+      property Last_Air_Date: string read FLast_Air_Date write SetLast_Air_Date;
+      property Last_Episode_To_Air: TTMDBAiredEpisode read fLast_Episode_To_Air;
+      property Name: string read fName write SetName;
+      property Next_Episode_To_Air: TTMDBAiredEpisode read fNext_Episode_To_Air;
+      property Networks: TCollection read fNetworks;
+      property Number_of_Episodes: Integer read FNumber_of_Episodes write SetNumber_of_Episodes;
+      property Number_of_Seasons: Integer read FNumber_of_Seasons write SetNumber_of_Seasons;
+      property Origin_Country: TStrings read fOrigin_Country;
+      property Original_Language: string read FOriginal_Language write SetOriginal_Language;
+      property Original_Name: string read fOriginal_Name write SetOriginal_Name;
+      property Overview: string read FOverview write SetOverview;
+      property Popularity: Double read FPopularity write SetPopularity;
+      property Poster_Path: string read FPoster_Path write SetPoster_Path;
+      property Production_Companies: TCollection read fProduction_Companies;
+      property Production_Countries: TCollection read fProduction_Countries;
+      property Seasons: TCollection read fSeasons;
+      property Spoken_Languages: TCollection read fSpoken_Languages;
+      property Status: string read FStatus write SetStatus;
+      property Tagline: string read FTagline write SetTagline;
+//      property Type: string
+      property Vote_Average: Double read FVote_Average write SetVote_Average;
+      property Vote_Count: Integer read FVote_Count write SetVote_Count;
+      property Alternative_Titles: TTMDBTVShowAlternativeTitles read fAlternative_Titles;
+      property Images: TTMDBMediaImages read fImages;
+      property External_IDs: TTMDBExternalIDs read fExternal_IDs;
+      property Keywords: TTMDBTVShowKeywords read fKeywords;
+      property Aggregate_Credits: TTMDBTVShowCredits read fAggregate_Credits;
+    end;
 
   { TTMDBSearchResult }
 
@@ -1091,6 +1445,7 @@ type
   TTMDBSearchCompanyResult = class(TTMDBSearchResult)
     public
       constructor Create(aJSON: string = '');
+      destructor Destroy; override;
     published
       property Results;
   end;
@@ -1270,6 +1625,7 @@ type
       function ValidateWithLoginURL: string;
       function CreateSessionURL: string;
       function CollectionURL(aCollectionID: string): string;
+      function TVShowURL(aTVShowID: string): string;
       function SearchCompanyURL(aCompany: string; aPage: Integer = 1): string;
       function SearchMovieURL(aMovie: string; aPage: Integer = 1; aIncludeAdult: Boolean = False;
                               aRegion: string = ''; aYear: Integer = 0; aPrimaryReleaseYear: Integer = 0): string;
@@ -1312,6 +1668,7 @@ type
       function GetPerson(aPersonID: string): TCustomJSONResponse;
       function GetNetwork(aNetworkID: string): TCustomJSONResponse;
       function GetCollection(aCollectionID: string): TCustomJSONResponse;
+      function GetTVShow(aTVShowID: string): TCustomJSONResponse;
       function SearchCompany(aCompany: string; aPage: Integer = 1): TCustomJSONResponse;
       function SearchMovie(aMovie: string; aPage: Integer = 1; aIncludeAdult: Boolean = False;
                            aRegion: string = ''; aYear: Integer = 0; aPrimaryReleaseYear: Integer = 0): TCustomJSONResponse;
@@ -1327,6 +1684,554 @@ uses fphttpclient, Dialogs;
 const
   TMDBBASEURL = 'https://api.themoviedb.org/';
   TMDBVersionString: array[TTMDBAPIVersion] of string = ('3', '4');
+
+{ TTMDBTVShowCastItem }
+
+procedure TTMDBTVShowCastItem.SetAdult(AValue: string);
+begin
+  if FAdult=AValue then Exit;
+  FAdult:=AValue;
+end;
+
+procedure TTMDBTVShowCastItem.SetGender(AValue: Integer);
+begin
+  if FGender=AValue then Exit;
+  FGender:=AValue;
+end;
+
+procedure TTMDBTVShowCastItem.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBTVShowCastItem.SetKnown_for_Department(AValue: string);
+begin
+  if FKnown_for_Department=AValue then Exit;
+  FKnown_for_Department:=AValue;
+end;
+
+procedure TTMDBTVShowCastItem.SetName(AValue: string);
+begin
+  if FName=AValue then Exit;
+  FName:=AValue;
+end;
+
+procedure TTMDBTVShowCastItem.SetOrder(AValue: Integer);
+begin
+  if FOrder=AValue then Exit;
+  FOrder:=AValue;
+end;
+
+procedure TTMDBTVShowCastItem.SetOriginal_Name(AValue: string);
+begin
+  if FOriginal_Name=AValue then Exit;
+  FOriginal_Name:=AValue;
+end;
+
+procedure TTMDBTVShowCastItem.SetPopularity(AValue: Double);
+begin
+  if FPopularity=AValue then Exit;
+  FPopularity:=AValue;
+end;
+
+procedure TTMDBTVShowCastItem.SetProfile_Path(AValue: string);
+begin
+  if FProfile_Path=AValue then Exit;
+  FProfile_Path:=AValue;
+end;
+
+procedure TTMDBTVShowCastItem.SetTotal_Episode_Count(AValue: Integer);
+begin
+  if FTotal_Episode_Count=AValue then Exit;
+  FTotal_Episode_Count:=AValue;
+end;
+
+constructor TTMDBTVShowCastItem.Create(ACollection: TCollection);
+begin
+  fRoles:= TCollection.Create(TTMDBTVShowRoleItem);
+  inherited Create(ACollection);
+end;
+
+destructor TTMDBTVShowCastItem.Destroy;
+begin
+  fRoles.Free;
+  inherited Destroy;
+end;
+
+{ TTMDBTVShowRoleItem }
+
+procedure TTMDBTVShowRoleItem.SetCharacter(AValue: string);
+begin
+  if fCharacter=AValue then Exit;
+  fCharacter:=AValue;
+end;
+
+procedure TTMDBTVShowRoleItem.SetCredit_ID(AValue: string);
+begin
+  if FCredit_ID=AValue then Exit;
+  FCredit_ID:=AValue;
+end;
+
+procedure TTMDBTVShowRoleItem.SetEpisode_Count(AValue: Integer);
+begin
+  if FEpisode_Count=AValue then Exit;
+  FEpisode_Count:=AValue;
+end;
+
+{ TTMDBTVShowJobItem }
+
+procedure TTMDBTVShowJobItem.SetCredit_ID(AValue: string);
+begin
+  if FCredit_ID=AValue then Exit;
+  FCredit_ID:=AValue;
+end;
+
+procedure TTMDBTVShowJobItem.SetEpisode_Count(AValue: Integer);
+begin
+  if FEpisode_Count=AValue then Exit;
+  FEpisode_Count:=AValue;
+end;
+
+procedure TTMDBTVShowJobItem.SetJob(AValue: string);
+begin
+  if FJob=AValue then Exit;
+  FJob:=AValue;
+end;
+
+{ TTMDBTVShowCrewItem }
+
+procedure TTMDBTVShowCrewItem.SetAdult(AValue: string);
+begin
+  if FAdult=AValue then Exit;
+  FAdult:=AValue;
+end;
+
+
+procedure TTMDBTVShowCrewItem.SetDepartment(AValue: string);
+begin
+  if FDepartment=AValue then Exit;
+  FDepartment:=AValue;
+end;
+
+procedure TTMDBTVShowCrewItem.SetGender(AValue: Integer);
+begin
+  if FGender=AValue then Exit;
+  FGender:=AValue;
+end;
+
+procedure TTMDBTVShowCrewItem.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBTVShowCrewItem.SetKnown_for_Department(AValue: string);
+begin
+  if FKnown_for_Department=AValue then Exit;
+  FKnown_for_Department:=AValue;
+end;
+
+procedure TTMDBTVShowCrewItem.SetName(AValue: string);
+begin
+  if FName=AValue then Exit;
+  FName:=AValue;
+end;
+
+procedure TTMDBTVShowCrewItem.SetOriginal_Name(AValue: string);
+begin
+  if FOriginal_Name=AValue then Exit;
+  FOriginal_Name:=AValue;
+end;
+
+procedure TTMDBTVShowCrewItem.SetPopularity(AValue: Double);
+begin
+  if FPopularity=AValue then Exit;
+  FPopularity:=AValue;
+end;
+
+procedure TTMDBTVShowCrewItem.SetProfile_Path(AValue: string);
+begin
+  if FProfile_Path=AValue then Exit;
+  FProfile_Path:=AValue;
+end;
+
+procedure TTMDBTVShowCrewItem.SetTotal_Episode_Count(AValue: Integer);
+begin
+  if FTotal_Episode_Count=AValue then Exit;
+  FTotal_Episode_Count:=AValue;
+end;
+
+constructor TTMDBTVShowCrewItem.Create(ACollection: TCollection);
+begin
+  fJobs:= TCollection.Create(TTMDBTVShowJobItem);
+  inherited Create(ACollection);
+end;
+
+destructor TTMDBTVShowCrewItem.Destroy;
+begin
+  fJobs.Free;
+  inherited Destroy;
+end;
+
+{ TTMDBTVShowCredits }
+
+procedure TTMDBTVShowCredits.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+constructor TTMDBTVShowCredits.Create(aJSON: string);
+begin
+  fCast:= TCollection.Create(TTMDBTVShowCastItem);
+  fCrew:= TCollection.Create(TTMDBTVShowCrewItem);
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBTVShowCredits.Destroy;
+begin
+  fCast.Free;
+  fCrew.Free;
+  inherited Destroy;
+end;
+
+{ TTMDBTVShowAlternativeTitles }
+
+procedure TTMDBTVShowAlternativeTitles.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+constructor TTMDBTVShowAlternativeTitles.Create(aJSON: string);
+begin
+  fResults:= TCollection.Create(TTMDBTitleItem);
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBTVShowAlternativeTitles.Destroy;
+begin
+  fResults.Free;
+  inherited Destroy;
+end;
+
+{ TTMDBAiredEpisode }
+
+procedure TTMDBAiredEpisode.SetAir_Date(AValue: string);
+begin
+  if FAir_Date=AValue then Exit;
+  FAir_Date:=AValue;
+end;
+
+procedure TTMDBAiredEpisode.SetEpisode_Number(AValue: Integer);
+begin
+  if FEpisode_Number=AValue then Exit;
+  FEpisode_Number:=AValue;
+end;
+
+procedure TTMDBAiredEpisode.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBAiredEpisode.SetName(AValue: string);
+begin
+  if FName=AValue then Exit;
+  FName:=AValue;
+end;
+
+procedure TTMDBAiredEpisode.SetOverview(AValue: string);
+begin
+  if FOverview=AValue then Exit;
+  FOverview:=AValue;
+end;
+
+procedure TTMDBAiredEpisode.SetProduction_Code(AValue: string);
+begin
+  if FProduction_Code=AValue then Exit;
+  FProduction_Code:=AValue;
+end;
+
+procedure TTMDBAiredEpisode.SetSession_Number(AValue: Integer);
+begin
+  if FSession_Number=AValue then Exit;
+  FSession_Number:=AValue;
+end;
+
+procedure TTMDBAiredEpisode.SetStill_Path(AValue: string);
+begin
+  if FStill_Path=AValue then Exit;
+  FStill_Path:=AValue;
+end;
+
+procedure TTMDBAiredEpisode.SetVote_Average(AValue: Double);
+begin
+  if FVote_Average=AValue then Exit;
+  FVote_Average:=AValue;
+end;
+
+procedure TTMDBAiredEpisode.SetVote_Count(AValue: Integer);
+begin
+  if FVote_Count=AValue then Exit;
+  FVote_Count:=AValue;
+end;
+
+{ TTMDBTVShowCreatedByItem }
+
+procedure TTMDBTVShowCreatedByItem.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBTVShowCreatedByItem.SetName(AValue: string);
+begin
+  if FName=AValue then Exit;
+  FName:=AValue;
+end;
+
+procedure TTMDBTVShowCreatedByItem.SetProfile_Path(AValue: string);
+begin
+  if FProfile_Path=AValue then Exit;
+  FProfile_Path:=AValue;
+end;
+
+procedure TTMDBTVShowCreatedByItem.SetCredit_ID(AValue: string);
+begin
+  if FCredit_ID=AValue then Exit;
+  FCredit_ID:=AValue;
+end;
+
+procedure TTMDBTVShowCreatedByItem.SetGender(AValue: Integer);
+begin
+  if FGender=AValue then Exit;
+  FGender:=AValue;
+end;
+
+{ TTMDBTVShowKeywords }
+
+procedure TTMDBTVShowKeywords.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+constructor TTMDBTVShowKeywords.Create(aJSON: string);
+begin
+  fKeywords:= TCollection.Create(TTMDBKeywordItem);
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBTVShowKeywords.Destroy;
+begin
+  inherited Destroy;
+end;
+
+{ TTMDBSeasonItem }
+
+procedure TTMDBSeasonItem.SetAir_Date(AValue: string);
+begin
+  if FAir_Date=AValue then Exit;
+  FAir_Date:=AValue;
+end;
+
+procedure TTMDBSeasonItem.SetEpisode_Count(AValue: Integer);
+begin
+  if FEpisode_Count=AValue then Exit;
+  FEpisode_Count:=AValue;
+end;
+
+procedure TTMDBSeasonItem.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBSeasonItem.SetName(AValue: string);
+begin
+  if FName=AValue then Exit;
+  FName:=AValue;
+end;
+
+procedure TTMDBSeasonItem.SetOverview(AValue: string);
+begin
+  if FOverview=AValue then Exit;
+  FOverview:=AValue;
+end;
+
+procedure TTMDBSeasonItem.SetPoster_Path(AValue: string);
+begin
+  if FPoster_Path=AValue then Exit;
+  FPoster_Path:=AValue;
+end;
+
+procedure TTMDBSeasonItem.SetSeason_Number(AValue: Integer);
+begin
+  if FSeason_Number=AValue then Exit;
+  FSeason_Number:=AValue;
+end;
+
+{ TTMDBTVShow }
+
+procedure TTMDBTVShow.SetBackdrop_Path(AValue: string);
+begin
+  if FBackdrop_Path=AValue then Exit;
+  FBackdrop_Path:=AValue;
+end;
+
+procedure TTMDBTVShow.SetEpisode_Run_Time(AValue: TIntegerList);
+begin
+  if FEpisode_Run_Time=AValue then Exit;
+  FEpisode_Run_Time:=AValue;
+end;
+
+procedure TTMDBTVShow.SetFirst_Air_Date(AValue: string);
+begin
+  if FFirst_Air_Date=AValue then Exit;
+  FFirst_Air_Date:=AValue;
+end;
+
+procedure TTMDBTVShow.SetHomepage(AValue: string);
+begin
+  if FHomepage=AValue then Exit;
+  FHomepage:=AValue;
+end;
+
+procedure TTMDBTVShow.SetID(AValue: Integer);
+begin
+  if FID=AValue then Exit;
+  FID:=AValue;
+end;
+
+procedure TTMDBTVShow.SetIn_Production(AValue: Boolean);
+begin
+  if FIn_Production=AValue then Exit;
+  FIn_Production:=AValue;
+end;
+
+procedure TTMDBTVShow.SetLast_Air_Date(AValue: string);
+begin
+  if FLast_Air_Date=AValue then Exit;
+  FLast_Air_Date:=AValue;
+end;
+
+procedure TTMDBTVShow.SetName(AValue: string);
+begin
+  if fName=AValue then Exit;
+  fName:=AValue;
+end;
+
+procedure TTMDBTVShow.SetNumber_of_Episodes(AValue: Integer);
+begin
+  if FNumber_of_Episodes=AValue then Exit;
+  FNumber_of_Episodes:=AValue;
+end;
+
+procedure TTMDBTVShow.SetNumber_of_Seasons(AValue: Integer);
+begin
+  if FNumber_of_Seasons=AValue then Exit;
+  FNumber_of_Seasons:=AValue;
+end;
+
+procedure TTMDBTVShow.SetOriginal_Language(AValue: string);
+begin
+  if FOriginal_Language=AValue then Exit;
+  FOriginal_Language:=AValue;
+end;
+
+procedure TTMDBTVShow.SetOriginal_Name(AValue: string);
+begin
+  if fOriginal_Name=AValue then Exit;
+  fOriginal_Name:=AValue;
+end;
+
+procedure TTMDBTVShow.SetOverview(AValue: string);
+begin
+  if FOverview=AValue then Exit;
+  FOverview:=AValue;
+end;
+
+procedure TTMDBTVShow.SetPopularity(AValue: Double);
+begin
+  if FPopularity=AValue then Exit;
+  FPopularity:=AValue;
+end;
+
+procedure TTMDBTVShow.SetPoster_Path(AValue: string);
+begin
+  if FPoster_Path=AValue then Exit;
+  FPoster_Path:=AValue;
+end;
+
+procedure TTMDBTVShow.SetStatus(AValue: string);
+begin
+  if FStatus=AValue then Exit;
+  FStatus:=AValue;
+end;
+
+procedure TTMDBTVShow.SetTagline(AValue: string);
+begin
+  if FTagline=AValue then Exit;
+  FTagline:=AValue;
+end;
+
+procedure TTMDBTVShow.SetVote_Average(AValue: Double);
+begin
+  if FVote_Average=AValue then Exit;
+  FVote_Average:=AValue;
+end;
+
+procedure TTMDBTVShow.SetVote_Count(AValue: Integer);
+begin
+  if FVote_Count=AValue then Exit;
+  FVote_Count:=AValue;
+end;
+
+constructor TTMDBTVShow.Create(aJSON: string);
+begin
+  fCreated_By:= TCollection.Create(TTMDBTVShowCreatedByItem);
+  FEpisode_Run_Time:= TIntegerList.Create;
+  fLanguages:= TStringList.Create;
+  fOrigin_Country:= TStringList.Create;
+  fGenres:= TCollection.Create(TTMDBGenreItem);
+  fNetworks:= TCollection.Create(TTMDBCompanyItem);
+  fProduction_Companies:= TCollection.Create(TTMDBCompanyItem);
+  fProduction_Countries:= TCollection.Create(TTMDBMovieCountry);
+  fSeasons:= TCollection.Create(TTMDBSeasonItem);
+  fSpoken_Languages:= TCollection.Create(TTMDBLanguageItem);
+  fImages:= TTMDBMediaImages.Create;
+  fExternal_IDs:= TTMDBExternalIDs.Create;
+  fKeywords:= TTMDBTVShowKeywords.Create;
+  fLast_Episode_To_Air:= TTMDBAiredEpisode.Create;
+  fNext_Episode_To_Air:= TTMDBAiredEpisode.Create;
+  fAlternative_Titles:= TTMDBTVShowAlternativeTitles.Create;
+  fAggregate_Credits:= TTMDBTVShowCredits.Create;
+  inherited Create(aJSON);
+end;
+
+destructor TTMDBTVShow.Destroy;
+begin
+  fCreated_By.Free;
+  FEpisode_Run_Time.Free;
+  fLanguages.Free;
+  fOrigin_Country.Free;
+  fGenres.Free;
+  fNetworks.Free;
+  fProduction_Companies.Free;
+  fProduction_Countries.Free;
+  fSeasons.Free;
+  fSpoken_Languages.Free;
+  fImages.Free;
+  fExternal_IDs.Free;
+  fKeywords.Free;
+  fLast_Episode_To_Air.Free;
+  fNext_Episode_To_Air.Free;
+  fAlternative_Titles.Free;
+  fAggregate_Credits.Free;
+  inherited Destroy;
+end;
 
 { TTMDBSessionID }
 
@@ -1396,7 +2301,7 @@ end;
 
 constructor TTMDBCollection.Create(aJSON: string);
 begin
-  fImages:= TTMDBMovieImages.Create;
+  fImages:= TTMDBMediaImages.Create;
   fParts:= TCollection.Create(TTMDBSearchMovieItem);
   inherited Create(aJSON);
 end;
@@ -1562,6 +2467,12 @@ constructor TTMDBSearchCompanyResult.Create(aJSON: string);
 begin
   fResults:= TCollection.Create(TTMDBCompanyItem);
   inherited Create(aJSON);
+end;
+
+destructor TTMDBSearchCompanyResult.Destroy;
+begin
+  fResults.Free;
+  inherited Destroy;
 end;
 
 { TTMDBSearchResult }
@@ -2382,22 +3293,22 @@ begin
   FName:=AValue;
 end;
 
-{ TTMDBMovieImages }
+{ TTMDBMediaImages }
 
-procedure TTMDBMovieImages.SetID(AValue: Integer);
+procedure TTMDBMediaImages.SetID(AValue: Integer);
 begin
   if FID=AValue then Exit;
   FID:=AValue;
 end;
 
-constructor TTMDBMovieImages.Create(aJSON: string);
+constructor TTMDBMediaImages.Create(aJSON: string);
 begin
   fBackdrops:= TCollection.Create(TTMDBImage);
   fPosters:= TCollection.Create(TTMDBImage);
   inherited Create(aJSON);
 end;
 
-destructor TTMDBMovieImages.Destroy;
+destructor TTMDBMediaImages.Destroy;
 begin
   fBackdrops.Free;
   fPosters.Free;
@@ -2496,6 +3407,12 @@ procedure TTMDBExternalIDs.SetInstagram_ID(AValue: string);
 begin
   if FInstagram_ID=AValue then Exit;
   FInstagram_ID:=AValue;
+end;
+
+procedure TTMDBExternalIDs.SetTVDB_ID(AValue: string);
+begin
+  if FTVDB_ID=AValue then Exit;
+  FTVDB_ID:=AValue;
 end;
 
 procedure TTMDBExternalIDs.SetTVRage_ID(AValue: string);
@@ -2681,15 +3598,15 @@ begin
   inherited Destroy;
 end;
 
-{ TTMDBMovieTitleItem }
+{ TTMDBTitleItem }
 
-procedure TTMDBMovieTitleItem.SetISO_3166_1(AValue: string);
+procedure TTMDBTitleItem.SetISO_3166_1(AValue: string);
 begin
   if FISO_3166_1=AValue then Exit;
   FISO_3166_1:=AValue;
 end;
 
-procedure TTMDBMovieTitleItem.SetTitle(AValue: string);
+procedure TTMDBTitleItem.SetTitle(AValue: string);
 begin
   if FTitle=AValue then Exit;
   FTitle:=AValue;
@@ -2705,7 +3622,7 @@ end;
 
 constructor TTMDBMovieAlternativeTitles.Create(aJSON: string);
 begin
-  fTitles:= TCollection.Create(TTMDBMovieTitleItem);
+  fTitles:= TCollection.Create(TTMDBTitleItem);
   inherited Create(aJSON);
 end;
 
@@ -2915,7 +3832,7 @@ begin
   fAlternative_Titles:= TTMDBMovieAlternativeTitles.Create;
   fCredits:= TTMDBMovieCredits.Create;
   fExternal_IDs:= TTMDBExternalIDs.Create;
-  fImages:= TTMDBMovieImages.Create;
+  fImages:= TTMDBMediaImages.Create;
   fKeywords:= TTMDBMovieKeywords.Create;
   fRelease_Dates:= TTMDBMovieReleaseDates.Create;
     
@@ -3439,6 +4356,18 @@ begin
   end;
 end;
 
+function TTMDB.GetTVShow(aTVShowID: string): TCustomJSONResponse;
+var
+  aRequest: string;
+begin
+  try
+    aRequest:= DoRequest(TVShowURL(aTVShowID));
+    Result:= TTMDBTVShow.Create(aRequest);
+  except
+    Result:= TTMDBTVShowError.Create;
+  end;
+end;
+
 function TTMDB.SearchCompany(aCompany: string; aPage: Integer
   ): TCustomJSONResponse;
 var
@@ -3544,6 +4473,13 @@ begin
 Result:= TMDBBASEURL + TMDBVersionString[Version] + '/collection/' + aCollectionID + '?api_key='
          + APIKey + '&language=' + Language + '&include_image_language=en,null'
          + '&append_to_response=images';
+end;
+
+function TTMDB.TVShowURL(aTVShowID: string): string;
+begin
+Result:= TMDBBASEURL + TMDBVersionString[Version] + '/tv/' + aTVShowID + '?api_key='
+         + APIKey + '&language=' + Language + '&include_image_language=en,null'
+         + '&append_to_response=alternative_titles,aggregate_credits,external_ids,images,keywords';
 end;
 
 function TTMDB.SearchCompanyURL(aCompany: string; aPage: Integer): string;

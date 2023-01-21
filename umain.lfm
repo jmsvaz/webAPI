@@ -1,5 +1,5 @@
 object fmWebQuery: TfmWebQuery
-  Left = 2224
+  Left = 736
   Height = 556
   Top = 288
   Width = 864
