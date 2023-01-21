@@ -1,2 +1,4 @@
 # webquery
-freepascal web query API wrappers
+freepascal web API wrappers:
+- OMDB
+- TMDB
