@@ -1,7 +1,7 @@
 object fmWebQuery: TfmWebQuery
-  Left = 511
+  Left = 2154
   Height = 556
-  Top = 232
+  Top = 332
   Width = 864
   ActiveControl = btSearch
   Caption = 'Web Query'
@@ -10,7 +10,7 @@ object fmWebQuery: TfmWebQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poScreenCenter
-  LCLVersion = '2.2.4.0'
+  LCLVersion = '2.2.6.0'
   object edSearch: TEdit
     Left = 286
     Height = 36

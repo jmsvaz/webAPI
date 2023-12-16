@@ -59,6 +59,7 @@ end;
 
 procedure TfmWebQuery.FormDestroy(Sender: TObject);
 begin
+  aTMDBAPI.Free;
   aOMDBAPI.Free;
 end;
 
