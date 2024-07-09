@@ -10,7 +10,7 @@ object fmWebQuery: TfmWebQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poScreenCenter
-  LCLVersion = '2.2.6.0'
+  LCLVersion = '3.4.0.0'
   object edSearch: TEdit
     Left = 286
     Height = 36
@@ -27,8 +27,8 @@ object fmWebQuery: TfmWebQuery
     Anchors = [akTop, akRight]
     Caption = 'Pesquisar'
     Default = True
-    OnClick = btSearchClick
     TabOrder = 2
+    OnClick = btSearchClick
   end
   object mmResult: TMemo
     Left = 50
@@ -45,10 +45,10 @@ object fmWebQuery: TfmWebQuery
     Top = 21
     Width = 221
     ItemHeight = 0
-    OnChange = cbSearchAPIChange
     Sorted = True
     Style = csDropDownList
     TabOrder = 0
+    OnChange = cbSearchAPIChange
   end
   object cbSearchMethod: TComboBox
     Left = 50

@@ -14,6 +14,7 @@ type
   E401UnauthorizedError = class(EHTTPError);
   E403ForbiddenError = class(EHTTPError);
   E404NotFoundError = class(EHTTPError);
+  E429NotFoundError = class(EHTTPError);
 
 resourcestring
   sEHTTPError = 'Unknow HTTP Error';
@@ -21,6 +22,7 @@ resourcestring
   sE401UnauthorizedError = 'Unauthorized';
   sE403ForbiddenError = 'Forbidden';
   sE404NotFoundError = 'Not Found';
+  sE429NotFoundError = 'Too Many Requests';
 
 type
 

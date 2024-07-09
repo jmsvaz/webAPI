@@ -5,7 +5,7 @@ unit uMain;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls, OMDB, TMDB;
+  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls, OMDB, TMDB, JustWatch;
 
 type
 
@@ -24,6 +24,7 @@ type
   private    
     aOMDBAPI: TOMDB;
     aTMDBAPI: TTMDB;
+    aTJustWatch: TJustWatch;
   public
 
   end;
@@ -48,17 +49,20 @@ procedure TfmWebQuery.FormCreate(Sender: TObject);
 begin
   aOMDBAPI:= TOMDB.Create(OMDB_API_KEY);
   aTMDBAPI:= TTMDB.Create(TMDB_API_KEY);
+  aTJustWatch:= TJustWatch.Create;
   aTMDBAPI.UserName:= TMDB_USERNAME;
   aTMDBAPI.Password:= TMDB_PASSWORD;
 
   cbSearchAPI.Items.Add(aOMDBAPI.Caption);
   cbSearchAPI.Items.Add(aTMDBAPI.Caption);
+  cbSearchAPI.Items.Add(aTJustWatch.Caption);
   cbSearchAPI.ItemIndex:= 0;
   cbSearchAPIChange(sender);
 end;
 
 procedure TfmWebQuery.FormDestroy(Sender: TObject);
 begin
+  aTJustWatch.Free;
   aTMDBAPI.Free;
   aOMDBAPI.Free;
 end;
@@ -108,6 +112,12 @@ begin
       cbSearchMethod.Items.Add('Search Collection');
 
       cbSearchMethod.ItemIndex:= 0;
+    end;
+  if cbSearchAPI.Items[cbSearchAPI.ItemIndex] = aTJustWatch.Caption then
+    begin
+      cbSearchMethod.Items.Add('Locales');
+      cbSearchMethod.Items.Add('Providers');
+      cbSearchMethod.Items.Add('Genres');
     end;
 end;
 
@@ -291,6 +301,18 @@ begin
            end;
 
       end;
+    if cbSearchAPI.Items[cbSearchAPI.ItemIndex] = aTJustWatch.Caption then
+      begin
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Locales' then
+          aResult:= aTJustWatch.Locales;
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Providers' then
+          aResult:= aTJustWatch.Providers;
+        if cbSearchMethod.Items[cbSearchMethod.ItemIndex] = 'Genres' then
+          aResult:= aTJustWatch.Genres;
+
+
+      end;
+
     if Assigned(aResult) then
       begin
         if aResult is TCustomJSONResponse then
